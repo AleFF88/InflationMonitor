@@ -1,8 +1,9 @@
-﻿using InflationMonitor.Domain.Entities;
+﻿using InflationMonitor.Application.Common.Interfaces;
+using InflationMonitor.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.Persistence {
-    public class ApplicationDbContext : DbContext {
+    public class ApplicationDbContext : DbContext, IApplicationDbContext {
         public DbSet<InflationRate> InflationRates => Set<InflationRate>();
          public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
 

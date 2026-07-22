@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\InflationMonitor.Application\InflationMonitor.Application.csproj" />
     <ProjectReference Include="..\InflationMonitor.Domain\InflationMonitor.Domain.csproj" />
   </ItemGroup>
 
