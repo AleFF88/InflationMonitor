@@ -1,4 +1,7 @@
+using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
+using InflationMonitor.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
     public class Program {
@@ -14,8 +17,18 @@ namespace InflationMonitor.WebApi {
 
             // Register MediatR handlers from Application assembly
             builder.Services.AddMediatR(cfg => {
-                cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly); 
-            }); 
+                cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly);
+            });
+
+            // Register Entity Framework DbContext with SQLite 				
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite("Data Source=inflation_monitor.db")
+            );
+
+            // Map IApplicationDbContext interface to concrete ApplicationDbContext implementation 
+            builder.Services.AddScoped<IApplicationDbContext>(provider =>
+                provider.GetRequiredService<ApplicationDbContext>()
+            );
 
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
