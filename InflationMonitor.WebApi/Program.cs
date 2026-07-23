@@ -1,3 +1,5 @@
+using InflationMonitor.Application.Dtos;
+
 namespace InflationMonitor.WebApi {
     public class Program {
         public static void Main(string[] args) {
@@ -9,6 +11,11 @@ namespace InflationMonitor.WebApi {
             // Register API Explorer and Swagger generator services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Register MediatR handlers from Application assembly
+            builder.Services.AddMediatR(cfg => {
+                cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly); 
+            }); 
 
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
