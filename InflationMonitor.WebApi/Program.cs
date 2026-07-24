@@ -1,6 +1,7 @@
 using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
 using InflationMonitor.Persistence;
+using InflationMonitor.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
@@ -33,8 +34,16 @@ namespace InflationMonitor.WebApi {
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
 
-            // 6. Enable Swagger UI in Development environment
+            // For Development environment
             if (app.Environment.IsDevelopment()) {
+
+                // Automatic data seeding in development environment (for testing and development purposes
+                using (var scope = app.Services.CreateScope()) {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    DbContextSeeder.Seed(dbContext);
+                }
+
+                // Enable Swagger UI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
