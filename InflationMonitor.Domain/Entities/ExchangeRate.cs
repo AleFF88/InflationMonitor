@@ -1,4 +1,5 @@
 ﻿using InflationMonitor.Domain.Exceptions;
+using System.Text.Json.Serialization;
 
 namespace InflationMonitor.Domain.Entities {
     public class ExchangeRate {
@@ -8,8 +9,13 @@ namespace InflationMonitor.Domain.Entities {
         public int Month { get; private set; }
         public decimal Rate { get; private set; }
 
+        // Required by Entity Framework Core to materialize objects from the database 
+        //   without invoking domain validation
         private ExchangeRate() { }
 
+        // Used for explicitly creating valid domain instances and for JSON deserialization 
+        //   during data seeding
+        [JsonConstructor]
         public ExchangeRate(string currencyCode, int year, int month, decimal rate) {
             if (string.IsNullOrWhiteSpace(currencyCode)) {
                 throw new DomainArgumentOutOfRangeException(nameof(currencyCode), "Currency code cannot be null or empty.");

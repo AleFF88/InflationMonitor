@@ -1,4 +1,5 @@
 ﻿using InflationMonitor.Domain.Exceptions;
+using System.Text.Json.Serialization;
 
 namespace InflationMonitor.Domain.Entities {
     public class InflationRate {
@@ -7,8 +8,13 @@ namespace InflationMonitor.Domain.Entities {
         public int Month { get; private set; }
         public decimal Value { get; private set; }
 
+        // Required by Entity Framework Core to materialize objects from the database 
+        //   without invoking domain validation
         private InflationRate() { }
 
+        // Used for explicitly creating valid domain instances and for JSON deserialization 
+        //   during data seeding
+        [JsonConstructor]
         public InflationRate(int year, int month, decimal value) {
             if (year < 2000) {
                 throw new InvalidHistoricalPeriodException("Inflation rate has only been available since 2000.");
