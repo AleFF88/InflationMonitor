@@ -5,8 +5,8 @@ using InflationMonitor.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
-    public class Program {
-        public static void Main(string[] args) {
+    public static class Program {
+        public static async Task Main(string[] args) {
             // Initialize the web application builder with command-line arguments and default configurations
             var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +40,7 @@ namespace InflationMonitor.WebApi {
                 // Automatic data seeding in development environment (for testing and development purposes
                 using (var scope = app.Services.CreateScope()) {
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    DbContextSeeder.Seed(dbContext);
+                    await DbContextSeeder.SeedAsync(dbContext);
                 }
 
                 // Enable Swagger UI
@@ -56,7 +56,7 @@ namespace InflationMonitor.WebApi {
             app.MapControllers();
 
             // Run the application and start listening for incoming HTTP requests
-            app.Run();
+            await app.RunAsync();
         }
     }
 }

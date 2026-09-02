@@ -20,4 +20,17 @@
     <ProjectReference Include="..\InflationMonitor.Domain\InflationMonitor.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Seeding\Data\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Seeding\Data\inflation.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Seeding\Data\usd.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
