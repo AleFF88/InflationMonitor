@@ -13,7 +13,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
         public async Task<CalculateComparisonResponseDto> Handle(CalculateComparisonQuery request, CancellationToken cancellationToken) {
 
-            decimal? inflationEquivalent = await CalculateInflationEquivalentAsync(request, cancellationToken);
+            decimal? inflationEquivalent = await CalculateInflationEquivalentAsync(request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
             decimal ? usdEquivalent = await CalculateCurrencyEquivalentAsync("USD", request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
@@ -32,18 +32,17 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
             };
         }
 
-        private async Task<decimal?> CalculateInflationEquivalentAsync(CalculateComparisonQuery request, CancellationToken cancellationToken) {
+        private async Task<decimal?> CalculateInflationEquivalentAsync(DateTime startDate, DateTime endDate, decimal amount, CancellationToken cancellationToken) {
 
             // Calculate expected months count in the requested range inclusive
-            int expectedMonthsCount = ((request.EndDate.Year - request.StartDate.Year) * 12)
-                + request.EndDate.Month - request.StartDate.Month + 1;
-
+            int expectedMonthsCount = ((endDate.Year - startDate.Year) * 12)
+                + endDate.Month - startDate.Month + 1;
             // Get a list of inflation data for the period
             var inflationIndices = await _context.InflationRates
-                           .Where(x => x.Year > request.StartDate.Year ||
-                           (x.Year == request.StartDate.Year && x.Month >= request.StartDate.Month))
-                .Where(x => x.Year < request.EndDate.Year ||
-                           (x.Year == request.EndDate.Year && x.Month <= request.EndDate.Month))
+                           .Where(x => x.Year > startDate.Year ||
+                           (x.Year == startDate.Year && x.Month >= startDate.Month))
+                .Where(x => x.Year < endDate.Year ||
+                           (x.Year == endDate.Year && x.Month <= endDate.Month))
                 .ToListAsync(cancellationToken);
 
             // TODO: Consider enriching the response DTO with metadata or warnings 
@@ -58,7 +57,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 inflationMultiplier *= index.Value;
             }
 
-            return Math.Round(request.Amount * inflationMultiplier, 2);
+            return Math.Round(amount * inflationMultiplier, 2);
             
         }
 
