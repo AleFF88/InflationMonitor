@@ -8,8 +8,4 @@
     public class DomainArgumentOutOfRangeException(string parameterName, string message) : DomainException($"Invalid value for {parameterName}: {message}.") {
         public string ParamName { get; } = parameterName;
     }
-
-    public class HistoricalDataNotFoundException(string message)
-        : DomainException($"Historical data not found: {message}.") {
-    }
 }
