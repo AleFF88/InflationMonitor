@@ -5,7 +5,7 @@ using InflationMonitor.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
-    public static class Program {
+    public class Program {
         public static async Task Main(string[] args) {
             // Initialize the web application builder with command-line arguments and default configurations
             var builder = WebApplication.CreateBuilder(args);

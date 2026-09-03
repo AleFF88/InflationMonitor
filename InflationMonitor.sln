@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InflationMonitor.Applicatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InflationMonitor.WebApi", "InflationMonitor.WebApi\InflationMonitor.WebApi.csproj", "{7E017384-0AFD-4E9A-83AF-A264C1261A5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InflationMonitor.Tests", "InflationMonitor.Tests\InflationMonitor.Tests.csproj", "{118D2346-46DF-40B5-BA99-33F081CF34A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{7E017384-0AFD-4E9A-83AF-A264C1261A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E017384-0AFD-4E9A-83AF-A264C1261A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E017384-0AFD-4E9A-83AF-A264C1261A5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{118D2346-46DF-40B5-BA99-33F081CF34A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{118D2346-46DF-40B5-BA99-33F081CF34A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{118D2346-46DF-40B5-BA99-33F081CF34A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{118D2346-46DF-40B5-BA99-33F081CF34A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{2939B3E2-0C2B-4777-9308-75F1774715D3} = {82C41F75-7638-4533-BA78-5D561229636C}
 		{C70F009E-B42F-4315-BED9-1BF308D44A12} = {FAEB13C5-A869-4AFF-8165-8E45FB90FE46}
 		{7E017384-0AFD-4E9A-83AF-A264C1261A5E} = {82C41F75-7638-4533-BA78-5D561229636C}
+		{118D2346-46DF-40B5-BA99-33F081CF34A8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {65CC3E23-3366-4490-8BAA-2E346ABE8B77}
