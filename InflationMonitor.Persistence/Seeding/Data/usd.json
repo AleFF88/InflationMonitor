@@ -207,8 +207,8 @@
 { "CurrencyCode" : "USD", "Year" : 2013, "Month" : 10, "Rate" : 8.19},
 { "CurrencyCode" : "USD", "Year" : 2013, "Month" : 11, "Rate" : 8.22},
 { "CurrencyCode" : "USD", "Year" : 2013, "Month" : 12, "Rate" : 8.24},
-{ "CurrencyCode" : "USD", "Year" : 2014, "Month" :  1, "Rate" :  8.40},
-{ "CurrencyCode" : "USD", "Year" : 2014, "Month" :  2, "Rate" :  9.00},
+{ "CurrencyCode" : "USD", "Year" : 2014, "Month" :  1, "Rate" : 8.40},
+{ "CurrencyCode" : "USD", "Year" : 2014, "Month" :  2, "Rate" : 9.00},
 { "CurrencyCode" : "USD", "Year" : 2014, "Month" :  3, "Rate" : 10.20},
 { "CurrencyCode" : "USD", "Year" : 2014, "Month" :  4, "Rate" : 11.80},
 { "CurrencyCode" : "USD", "Year" : 2014, "Month" :  5, "Rate" : 12.00},
@@ -315,8 +315,6 @@
 { "CurrencyCode" : "USD", "Year" : 2022, "Month" : 10, "Rate" : 41.10},
 { "CurrencyCode" : "USD", "Year" : 2022, "Month" : 11, "Rate" : 40.50},
 { "CurrencyCode" : "USD", "Year" : 2022, "Month" : 12, "Rate" : 40.30},  
-{ "CurrencyCode" :        "Year" :       "Month" :     "Rate" :           
-{ "CurrencyCode" :        "Year" :       "Month" :     "Rate" :           
 { "CurrencyCode" : "USD", "Year" : 2023, "Month" :  1, "Rate" : 40.55},
 { "CurrencyCode" : "USD", "Year" : 2023, "Month" :  2, "Rate" : 40.15},
 { "CurrencyCode" : "USD", "Year" : 2023, "Month" :  3, "Rate" : 38.85},
