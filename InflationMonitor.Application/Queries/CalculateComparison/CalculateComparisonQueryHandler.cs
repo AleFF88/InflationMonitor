@@ -15,7 +15,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
             decimal? inflationEquivalent = await CalculateInflationEquivalentAsync(request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
-            decimal ? usdEquivalent = await CalculateCurrencyEquivalentAsync("USD", request.StartDate, request.EndDate, request.Amount, cancellationToken);
+            decimal? usdEquivalent = await CalculateCurrencyEquivalentAsync("USD", request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
             decimal? eurEquivalent = await CalculateCurrencyEquivalentAsync("EUR", request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
@@ -39,7 +39,8 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 + endDate.Month - startDate.Month + 1;
             // Get a list of inflation data for the period
             var inflationIndices = await _context.InflationRates
-                           .Where(x => x.Year > startDate.Year ||
+                .AsNoTracking()
+                .Where(x => x.Year > startDate.Year ||
                            (x.Year == startDate.Year && x.Month >= startDate.Month))
                 .Where(x => x.Year < endDate.Year ||
                            (x.Year == endDate.Year && x.Month <= endDate.Month))
@@ -58,7 +59,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
             }
 
             return Math.Round(amount * inflationMultiplier, 2);
-            
+
         }
 
         private async Task<decimal?> CalculateCurrencyEquivalentAsync(
@@ -68,17 +69,15 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
             decimal amount,
             CancellationToken cancellationToken) {
 
-            var startRate = await _context.ExchangeRates
-                .FirstOrDefaultAsync(x => x.CurrencyCode == currencyCode &&
-                                          x.Year == startDate.Year &&
-                                          x.Month == startDate.Month,
-                                     cancellationToken);
+            var rates = await _context.ExchangeRates
+                .AsNoTracking()
+                .Where(x => x.CurrencyCode == currencyCode &&
+                           ((x.Year == startDate.Year && x.Month == startDate.Month) ||
+                            (x.Year == endDate.Year && x.Month == endDate.Month)))
+                .ToListAsync(cancellationToken);
 
-            var endRate = await _context.ExchangeRates
-                .FirstOrDefaultAsync(x => x.CurrencyCode == currencyCode &&
-                                          x.Year == endDate.Year &&
-                                          x.Month == endDate.Month,
-                                     cancellationToken);
+            var startRate = rates.FirstOrDefault(x => x.Year == startDate.Year && x.Month == startDate.Month);
+            var endRate = rates.FirstOrDefault(x => x.Year == endDate.Year && x.Month == endDate.Month);
 
             // TODO: Consider enriching the response DTO with metadata or warnings 
             //   explaining why a calculation returned null (e.g., historical data for
