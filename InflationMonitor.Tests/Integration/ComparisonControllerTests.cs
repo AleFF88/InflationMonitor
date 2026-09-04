@@ -69,7 +69,11 @@ namespace InflationMonitorTests.Integration {
             var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=-100");
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+            problemDetails.Should().NotBeNull();
+            problemDetails!.Title.Should().Be("Validation Error");
         }
     }
 }
