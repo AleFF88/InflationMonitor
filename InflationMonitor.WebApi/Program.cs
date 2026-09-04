@@ -29,6 +29,10 @@ namespace InflationMonitor.WebApi {
                 cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             });
 
+            // Register global exception handler and problem details middleware
+            builder.Services.AddExceptionHandler<Common.GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             // Register Entity Framework DbContext with SQLite 						
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -45,10 +49,13 @@ namespace InflationMonitor.WebApi {
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
 
+            // Use the global exception handler middleware
+            app.UseExceptionHandler();
+
             // For Development environment
             if (app.Environment.IsDevelopment()) {
 
-                // Automatic data seeding in development environment (for testing and development purposes
+                // Automatic data seeding in development environment (for testing and development purposes)
                 using (var scope = app.Services.CreateScope()) {
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     await DbContextSeeder.SeedAsync(dbContext);

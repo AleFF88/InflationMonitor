@@ -25,12 +25,12 @@ namespace InflationMonitor.Application.Common.Behaviors {
                 _validators.Select(v => v.ValidateAsync(context, cancellationToken))
             );
 
-            var failures = validationResults
+            var errors = validationResults
                 .SelectMany(r => r.Errors)
                 .ToList();
 
-            if (failures.Count != 0) {
-                throw new ValidationException(failures);
+            if (errors.Count != 0) {
+                throw new ValidationException(errors);
             }
 
             return await next();
