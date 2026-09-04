@@ -1,11 +1,14 @@
 ﻿namespace InflationMonitor.Domain.Exceptions {
-    public abstract class DomainException(string message) : Exception(message) {
-    }
+    public abstract class DomainException(string message) : Exception(message) { }
 
-    public class InvalidHistoricalPeriodException(string message) : DomainException($"Invalid historical period: {message}.") {
-    }
+    public class InvalidHistoricalPeriodException(string message) : DomainException(message) { }
 
-    public class DomainArgumentOutOfRangeException(string parameterName, string message) : DomainException($"Invalid value for {parameterName}: {message}.") {
-        public string ParamName { get; } = parameterName;
+    public class DomainArgumentOutOfRangeException : DomainException {
+        public string ParamName { get; }
+
+        public DomainArgumentOutOfRangeException(string paramName, string message)
+            : base(message) {
+            ParamName = paramName;
+        }
     }
 }

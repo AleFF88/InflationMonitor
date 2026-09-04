@@ -21,16 +21,17 @@ namespace InflationMonitor.Domain.Entities {
                 throw new DomainArgumentOutOfRangeException(nameof(currencyCode), "Currency code cannot be null or empty.");
             }
 
+            // Global lower bound for Ukrainian monetary system (Hryvnia introduced in Sept 1996)
             if (year < 1996 || (year == 1996 && month < 9)) {
-                throw new InvalidHistoricalPeriodException("Exchange rate has only been available since September 1996.");
+                throw new InvalidHistoricalPeriodException("Financial data is available only starting from September 1996.");
             }
 
             if (month < 1 || month > 12) {
                 throw new DomainArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
             }
 
-            if (rate < 0) {
-                throw new DomainArgumentOutOfRangeException(nameof(rate), "Exchange rate cannot be negative.");
+            if (rate <= 0) {
+                throw new DomainArgumentOutOfRangeException(nameof(rate), "Exchange rate must be greater than zero.");
             }
 
             CurrencyCode = currencyCode.ToUpperInvariant();
