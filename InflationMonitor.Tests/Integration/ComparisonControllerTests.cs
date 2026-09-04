@@ -62,5 +62,14 @@ namespace InflationMonitorTests.Integration {
             result.Summary.EurEquivalent.Should().Be(1025.00m);
 
         }
+
+        [Fact]
+        public async Task Compare_ShouldReturnInternalServerError_WhenAmountIsInvalid() {
+            // Act
+            var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=-100");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        }
     }
 }
