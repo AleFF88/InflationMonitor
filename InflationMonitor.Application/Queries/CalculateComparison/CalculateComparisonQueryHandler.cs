@@ -15,9 +15,8 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
             decimal? inflationEquivalent = await CalculateInflationEquivalentAsync(request.StartDate, request.EndDate, request.Amount, cancellationToken);
 
-            decimal? usdEquivalent = await CalculateCurrencyEquivalentAsync("USD", request.StartDate, request.EndDate, request.Amount, cancellationToken);
-
-            decimal? eurEquivalent = await CalculateCurrencyEquivalentAsync("EUR", request.StartDate, request.EndDate, request.Amount, cancellationToken);
+            var currencyCodes = new[] { "USD", "EUR" }; 
+            var currencyEquivalents = await CalculateCurrenciesEquivalentsAsync(currencyCodes, request.StartDate, request.EndDate, request.Amount, cancellationToken); 
 
             return new CalculateComparisonResponseDto {
                 StartDate = request.StartDate.ToString("yyyy-MM-dd"),
@@ -26,8 +25,8 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 Summary = new CashUsdComparisonSummaryDto {
                     CashGrivna = request.Amount,
                     InflationEquivalent = inflationEquivalent,
-                    UsdEquivalent = usdEquivalent,
-                    EurEquivalent = eurEquivalent
+                    UsdEquivalent = currencyEquivalents.GetValueOrDefault("USD"),
+                    EurEquivalent = currencyEquivalents.GetValueOrDefault("EUR")
                 }
             };
         }
@@ -62,8 +61,8 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
         }
 
-        private async Task<decimal?> CalculateCurrencyEquivalentAsync(
-            string currencyCode,
+        private async Task<Dictionary<string, decimal?>> CalculateCurrenciesEquivalentsAsync(
+            string[] currencyCodes,
             DateTime startDate,
             DateTime endDate,
             decimal amount,
@@ -71,23 +70,27 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
             var rates = await _context.ExchangeRates
                 .AsNoTracking()
-                .Where(x => x.CurrencyCode == currencyCode &&
+                .Where(x => currencyCodes.Contains(x.CurrencyCode) &&
                            ((x.Year == startDate.Year && x.Month == startDate.Month) ||
                             (x.Year == endDate.Year && x.Month == endDate.Month)))
                 .ToListAsync(cancellationToken);
+            var ratesByCurrency = rates.GroupBy(x => x.CurrencyCode);
 
-            var startRate = rates.FirstOrDefault(x => x.Year == startDate.Year && x.Month == startDate.Month);
-            var endRate = rates.FirstOrDefault(x => x.Year == endDate.Year && x.Month == endDate.Month);
+            var result = new Dictionary<string, decimal?>();
+            foreach (var currency in ratesByCurrency) {
+                var startRate = currency.FirstOrDefault(x => x.Year == startDate.Year && x.Month == startDate.Month);
+                var endRate = currency.FirstOrDefault(x => x.Year == endDate.Year && x.Month == endDate.Month);
 
-            // TODO: Consider enriching the response DTO with metadata or warnings 
-            //   explaining why a calculation returned null (e.g., historical data for
-            //   EUR is available only starting from 1999-01, but 1998-05 was requested).
-            if (startRate == null || endRate == null) {
-                return null;
+                if (startRate == null || endRate == null) {
+                    result[currency.Key] = null;
+                    continue;
+                }
+
+                decimal currencyBought = amount / startRate.Rate;
+                result[currency.Key] = Math.Round(currencyBought * endRate.Rate, 2);
             }
 
-            decimal currencyBought = amount / startRate.Rate;
-            return Math.Round(currencyBought * endRate.Rate, 2);
+            return result;
         }
     }
 }
