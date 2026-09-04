@@ -1,7 +1,11 @@
+using FluentValidation;
+using InflationMonitor.Application.Common.Behaviors;
 using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
+using InflationMonitor.Application.Queries.CalculateComparison;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
@@ -10,15 +14,19 @@ namespace InflationMonitor.WebApi {
             // Initialize the web application builder with command-line arguments and default configurations
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add support for API controllers to the Dependency Injection container
+            // Add support for API controllers to the DI container
             builder.Services.AddControllers();
             // Register API Explorer and Swagger generator services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Register MediatR handlers from Application assembly
+            // Add FluentValidation validatiors to the DI container
+            builder.Services.AddValidatorsFromAssemblyContaining<CalculateComparisonQueryValidator>();
+
+            // Register MediatR and connect ValidationBehavior to the MediatR Execution Pipeline
             builder.Services.AddMediatR(cfg => {
                 cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly);
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             });
 
             // Register Entity Framework DbContext with SQLite 						
