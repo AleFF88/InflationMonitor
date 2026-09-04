@@ -21,9 +21,12 @@ namespace InflationMonitor.WebApi {
                 cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly);
             });
 
-            // Register Entity Framework DbContext with SQLite 				
+            // Register Entity Framework DbContext with SQLite 						
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite("Data Source=inflation_monitor.db")
+                options.UseSqlite(connectionString)
             );
 
             // Map IApplicationDbContext interface to concrete ApplicationDbContext implementation 
