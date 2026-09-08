@@ -2,7 +2,9 @@ using FluentValidation;
 using InflationMonitor.Application.Common.Behaviors;
 using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
+using InflationMonitor.Application.Factories;
 using InflationMonitor.Application.Queries.CalculateComparison;
+using InflationMonitor.Application.Strategies;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
 using MediatR;
@@ -45,6 +47,11 @@ namespace InflationMonitor.WebApi {
             builder.Services.AddScoped<IApplicationDbContext>(provider =>
                 provider.GetRequiredService<ApplicationDbContext>()
             );
+
+            // Register strategies and factories for financial instrument calculations
+            builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, InflationStrategy>();
+            builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, BatchCurrencyStrategy>();
+            builder.Services.AddScoped<IFinancialInstrumentFactory, FinancialInstrumentFactory>();
 
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
