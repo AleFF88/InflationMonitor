@@ -33,7 +33,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 StartDate = request.StartDate.ToString("yyyy-MM-dd"),
                 EndDate = request.EndDate.ToString("yyyy-MM-dd"),
                 InitialAmount = request.Amount,
-                Summary = new CashUsdComparisonSummaryDto {
+                Summary = new FinancialComparisonSummaryDto {
                     CashGrivna = request.Amount,
                     InflationEquivalent = inflationResults.GetValueOrDefault("Inflation"),
                     UsdEquivalent = currencyResults.GetValueOrDefault("USD"),
