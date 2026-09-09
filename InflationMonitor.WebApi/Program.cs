@@ -48,6 +48,13 @@ namespace InflationMonitor.WebApi {
                 provider.GetRequiredService<ApplicationDbContext>()
             );
 
+            // Register in-memory caching services with custom options
+            builder.Services.AddMemoryCache(options => { 
+                options.SizeLimit = 22_000;   
+                options.CompactionPercentage = 0.2;
+                options.ExpirationScanFrequency = TimeSpan.FromMinutes(15); 
+            });
+
             // Register strategies and factories for financial instrument calculations
             builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, InflationStrategy>();
             builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, BatchCurrencyStrategy>();
