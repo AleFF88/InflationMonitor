@@ -61,7 +61,7 @@ namespace InflationMonitor.Application.Strategies {
                     .SetAbsoluteExpiration(TimeSpan.FromDays(10));
 
                 // Save fetched database records to cache and append to final list 
-                foreach (var rate in fetchedFromDb) { // new code
+                foreach (var rate in fetchedFromDb) { 
                     var cacheKey = $"inflation_rate_{rate.Year}_{rate.Month}";
                     _cache.Set(cacheKey, rate, cacheEntryOptions);
                     inflationIndices.Add(rate);
