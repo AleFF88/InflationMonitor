@@ -1,6 +1,8 @@
 using InflationMonitor.Application;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
+using Microsoft.OpenApi;
+using System.Reflection;
 
 namespace InflationMonitor.WebApi {
     public class Program {
@@ -13,7 +15,18 @@ namespace InflationMonitor.WebApi {
 
             // Register API Explorer and Swagger generator services
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            builder.Services.AddSwaggerGen(options => {
+                options.SwaggerDoc("v1", new OpenApiInfo {
+                    Title = "Inflation Monitor API",
+                    Version = "v1",
+                    Description = "API for calculating the degradation of the purchasing power of the Ukrainian Hryvnia relative to various financial equivalents based on historical data."
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
+            });
 
             // Register Application layer services (MediatR, FluentValidation, Strategies)
             builder.Services.AddApplicationServices();
