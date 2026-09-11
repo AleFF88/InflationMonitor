@@ -1,8 +1,6 @@
 using InflationMonitor.Application;
-using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
-using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
     public class Program {
@@ -19,22 +17,12 @@ namespace InflationMonitor.WebApi {
             // Register Application layer services (MediatR, FluentValidation, Strategies)
             builder.Services.AddApplicationServices();
 
+            // Register Persistence layer services (DbContext, SQLite)
+            builder.Services.AddPersistenceServices(builder.Configuration);
+
             // Register global exception handler and problem details middleware
             builder.Services.AddExceptionHandler<Common.GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
-
-            // Register Entity Framework DbContext with SQLite 						
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(connectionString)
-            );
-
-            // Map IApplicationDbContext interface to concrete ApplicationDbContext implementation 
-            builder.Services.AddScoped<IApplicationDbContext>(provider =>
-                provider.GetRequiredService<ApplicationDbContext>()
-            );
 
             // Register in-memory caching services with custom options
             builder.Services.AddMemoryCache(options => { 
