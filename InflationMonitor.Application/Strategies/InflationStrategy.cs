@@ -17,69 +17,61 @@ namespace InflationMonitor.Application.Strategies {
 
         public async Task<Dictionary<string, decimal?>> CalculateEquivalentsAsync(
             IEnumerable<string> instrumentCodes,
-            DateTime startDate,
-            DateTime endDate,
+            DateOnly startDate,
+            DateOnly endDate,
             decimal amount,
             CancellationToken cancellationToken) {
 
-
-            // Generate full list of required periods (Year, Month) 		
+            // Generate full list of required periods (normalized to the 1st day of each month)
             var requiredPeriods = GetRequiredPeriods(startDate, endDate);
             int expectedMonthsCount = requiredPeriods.Count;
 
+            var fetchedRates = new List<InflationRate>();
+            var missingPeriods = new List<DateOnly>();
 
-            var inflationIndices = new List<InflationRate>();
-            var missingPeriods = new List<(int Year, int Month)>();
-
-
-            // Retrieve available records from cache 
+            // Retrieve available records from cache
             foreach (var period in requiredPeriods) {
-                var cacheKey = $"inflation_rate_{period.Year}_{period.Month}";
+                var cacheKey = $"inflation_{period:yyyy-MM-01}";
+
                 if (_cache.TryGetValue(cacheKey, out InflationRate? cachedRate) && cachedRate != null) {
-                    inflationIndices.Add(cachedRate); 
+                    fetchedRates.Add(cachedRate);
                 } else {
                     missingPeriods.Add(period);
                 }
             }
 
-            // Fetch missing periods from database if cache miss occurred 
+            // Fetch missing rates from database if any entries were not found in cache
             if (missingPeriods.Count != 0) {
-                // Format required keys into string representations (e.g., "2023_1")
-                var missingKeys = missingPeriods
-                    .Select(p => $"{p.Year}_{p.Month}")
-                    .ToList();
-
-                // Query DB using formatted string keys translated directly to SQL
                 var fetchedFromDb = await _context.InflationRates
                     .AsNoTracking()
-                    .Where(x => missingKeys.Contains(x.Year.ToString() + "_" + x.Month.ToString())) 
+                    .Where(x => missingPeriods.Contains(x.Date))
                     .ToListAsync(cancellationToken);
 
-                // Configure cache entry options with explicit size and expiration 
+                // Store rates not cached earlier to the memory cache and enrich local collection 
+                //   to perform the calculations for the requested period
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSize(1)
                     .SetAbsoluteExpiration(TimeSpan.FromDays(10));
 
-                // Save fetched database records to cache and append to final list 
-                foreach (var rate in fetchedFromDb) { 
-                    var cacheKey = $"inflation_rate_{rate.Year}_{rate.Month}";
+                foreach (var rate in fetchedFromDb) {
+                    var cacheKey = $"inflation_{rate.Date:yyyy-MM-01}";
                     _cache.Set(cacheKey, rate, cacheEntryOptions);
-                    inflationIndices.Add(rate);
+                    fetchedRates.Add(rate);
                 }
-            } 
+            }
 
             var result = new Dictionary<string, decimal?>();
 
             // TODO: Consider enriching the response DTO with metadata or warnings 
             //   explaining why a calculation returned null (e.g., historical data for
-            //   EUR is available only starting from 1999-01, but 1998-05 was requested).
-            if (inflationIndices.Count != expectedMonthsCount) {
+            //   requested period is missing).
+            if (fetchedRates.Count != expectedMonthsCount) {
                 result[CategoryKey] = null;
                 return result;
             }
 
             decimal inflationMultiplier = 1.0m;
-            foreach (var index in inflationIndices) {
+            foreach (var index in fetchedRates) {
                 inflationMultiplier *= index.Rate;
             }
 
@@ -87,14 +79,13 @@ namespace InflationMonitor.Application.Strategies {
             return result;
         }
 
-        private static List<(int Year, int Month)> GetRequiredPeriods(DateTime startDate, DateTime endDate) {
-
-            var periods = new List<(int Year, int Month)>();
-            var current = new DateTime(startDate.Year, startDate.Month, 1);
-            var last = new DateTime(endDate.Year, endDate.Month, 1);
+        private static List<DateOnly> GetRequiredPeriods(DateOnly startDate, DateOnly endDate) {
+            var periods = new List<DateOnly>();
+            var current = new DateOnly(startDate.Year, startDate.Month, 1);
+            var last = new DateOnly(endDate.Year, endDate.Month, 1);
 
             while (current <= last) {
-                periods.Add((current.Year, current.Month));
+                periods.Add(current);
                 current = current.AddMonths(1);
             }
 
