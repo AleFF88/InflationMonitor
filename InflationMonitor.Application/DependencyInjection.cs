@@ -22,11 +22,17 @@ namespace InflationMonitor.Application {
                 cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             });
 
-
             // Register strategies and factories for financial instrument calculations
             services.AddScoped<IBatchFinancialInstrumentStrategy, InflationStrategy>();
             services.AddScoped<IBatchFinancialInstrumentStrategy, BatchCurrencyStrategy>();
             services.AddScoped<IFinancialInstrumentFactory, FinancialInstrumentFactory>();
+
+            // Register in-memory caching services with custom options
+            services.AddMemoryCache(options => {
+                options.SizeLimit = 22_000;
+                options.CompactionPercentage = 0.2;
+                options.ExpirationScanFrequency = TimeSpan.FromMinutes(15);
+            });
 
             return services;
         }

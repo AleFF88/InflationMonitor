@@ -5,11 +5,12 @@ using InflationMonitor.Persistence.Seeding;
 namespace InflationMonitor.WebApi {
     public class Program {
         public static async Task Main(string[] args) {
-            // Initialize the web application builder with command-line arguments and default configurations
+            // Initialize the web application builder with command-line arguments
             var builder = WebApplication.CreateBuilder(args);
 
             // Add support for API controllers to the DI container
             builder.Services.AddControllers();
+
             // Register API Explorer and Swagger generator services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -23,13 +24,6 @@ namespace InflationMonitor.WebApi {
             // Register global exception handler and problem details middleware
             builder.Services.AddExceptionHandler<Common.GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
-
-            // Register in-memory caching services with custom options
-            builder.Services.AddMemoryCache(options => { 
-                options.SizeLimit = 22_000;   
-                options.CompactionPercentage = 0.2;
-                options.ExpirationScanFrequency = TimeSpan.FromMinutes(15); 
-            });
 
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
