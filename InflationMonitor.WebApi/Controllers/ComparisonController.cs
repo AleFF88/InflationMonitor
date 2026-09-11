@@ -14,8 +14,8 @@ namespace InflationMonitor.WebApi.Controllers {
 
         [HttpGet("compare")]
         public async Task<IActionResult> Compare(
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate,
+            [FromQuery] DateOnly startDate,
+            [FromQuery] DateOnly endDate,
             [FromQuery] decimal amount,
             CancellationToken cancellationToken) {
 
