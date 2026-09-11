@@ -20,7 +20,7 @@ namespace InflationMonitor.WebApi {
                 options.SwaggerDoc("v1", new OpenApiInfo {
                     Title = "Inflation Monitor API",
                     Version = "v1",
-                    Description = "API for calculating the degradation of the purchasing power of the Ukrainian Hryvnia relative to various financial equivalents based on historical data."
+                    Description = "API for calculating changes in the purchasing power of the Ukrainian Hryvnia relative to various financial equivalents based on historical data."
                 });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

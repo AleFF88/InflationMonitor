@@ -1,10 +1,12 @@
-﻿using InflationMonitor.Application.Queries.CalculateComparison;
+﻿using InflationMonitor.Application.Dtos;
+using InflationMonitor.Application.Queries.CalculateComparison;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InflationMonitor.WebApi.Controllers {
     [ApiController]
     [Route("api/calculator")]
+    [Produces("application/json")]
     public class ComparisonController : ControllerBase {
         private readonly IMediator _mediator;
 
@@ -12,7 +14,21 @@ namespace InflationMonitor.WebApi.Controllers {
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Calculates changes in the purchasing power of the Ukrainian Hryvnia relative to various financial equivalents based on historical data.
+        /// </summary>
+        /// <param name="startDate">Start period of the calculation in YYYY-MM-DD format.</param>
+        /// <param name="endDate">End period of the calculation in YYYY-MM-DD format.</param>
+        /// <param name="amount">Initial monetary amount in UAH. Must be greater than 0.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Calculated financial comparison summary containing equivalents for requested instruments.</returns>
+        /// <response code="200">Calculations successfully evaluated.</response>
+        /// <response code="400">Invalid input parameters or business rule violation.</response>
+        /// <response code="500">Internal server error occurred while processing calculation.</response>
         [HttpGet("compare")]
+        [ProducesResponseType(typeof(CalculateComparisonResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Compare(
             [FromQuery] DateOnly startDate,
             [FromQuery] DateOnly endDate,
