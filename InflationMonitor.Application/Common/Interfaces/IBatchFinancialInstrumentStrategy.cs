@@ -4,8 +4,8 @@
 
         Task<Dictionary<string, decimal?>> CalculateEquivalentsAsync(
             IEnumerable<string> instrumentCodes,
-            DateTime startDate, 
-            DateTime endDate, 
+            DateOnly startDate,
+            DateOnly endDate, 
             decimal amount, 
             CancellationToken cancellationToken);
     }
