@@ -1,13 +1,7 @@
-using FluentValidation;
-using InflationMonitor.Application.Common.Behaviors;
+using InflationMonitor.Application;
 using InflationMonitor.Application.Common.Interfaces;
-using InflationMonitor.Application.Dtos;
-using InflationMonitor.Application.Factories;
-using InflationMonitor.Application.Queries.CalculateComparison;
-using InflationMonitor.Application.Strategies;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace InflationMonitor.WebApi {
@@ -22,14 +16,8 @@ namespace InflationMonitor.WebApi {
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Add FluentValidation validatiors to the DI container
-            builder.Services.AddValidatorsFromAssemblyContaining<CalculateComparisonQueryValidator>();
-
-            // Register MediatR and connect ValidationBehavior to the MediatR Execution Pipeline
-            builder.Services.AddMediatR(cfg => {
-                cfg.RegisterServicesFromAssembly(typeof(CalculateComparisonResponseDto).Assembly);
-                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-            });
+            // Register Application layer services (MediatR, FluentValidation, Strategies)
+            builder.Services.AddApplicationServices();
 
             // Register global exception handler and problem details middleware
             builder.Services.AddExceptionHandler<Common.GlobalExceptionHandler>();
@@ -54,11 +42,6 @@ namespace InflationMonitor.WebApi {
                 options.CompactionPercentage = 0.2;
                 options.ExpirationScanFrequency = TimeSpan.FromMinutes(15); 
             });
-
-            // Register strategies and factories for financial instrument calculations
-            builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, InflationStrategy>();
-            builder.Services.AddScoped<IBatchFinancialInstrumentStrategy, BatchCurrencyStrategy>();
-            builder.Services.AddScoped<IFinancialInstrumentFactory, FinancialInstrumentFactory>();
 
             // Build the WebApplication instance using the configured services
             var app = builder.Build();
