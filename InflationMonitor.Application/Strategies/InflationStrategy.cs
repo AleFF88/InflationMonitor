@@ -80,7 +80,7 @@ namespace InflationMonitor.Application.Strategies {
 
             decimal inflationMultiplier = 1.0m;
             foreach (var index in inflationIndices) {
-                inflationMultiplier *= index.Value;
+                inflationMultiplier *= index.Rate;
             }
 
             result[CategoryKey] = Math.Round(amount * inflationMultiplier, 2);

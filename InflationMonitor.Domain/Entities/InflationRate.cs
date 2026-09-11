@@ -5,7 +5,7 @@ namespace InflationMonitor.Domain.Entities {
     public class InflationRate {
         public int Id { get; private set; }
         public DateOnly Date { get; private set; }
-        public decimal Value { get; private set; }
+        public decimal Rate { get; private set; }
 
         // Required by Entity Framework Core to materialize objects from the database 
         //   without invoking domain validation
@@ -14,7 +14,7 @@ namespace InflationMonitor.Domain.Entities {
         // Used for explicitly creating valid domain instances and for JSON deserialization 
         //   during data seeding
         [JsonConstructor]
-        public InflationRate(DateOnly date, decimal value) {
+        public InflationRate(DateOnly date, decimal rate) {
             // Normalize the date to the 1st day of the month before validating bounds
             var normalizedDate = new DateOnly(date.Year, date.Month, 1);
 
@@ -24,12 +24,12 @@ namespace InflationMonitor.Domain.Entities {
                 throw new InvalidHistoricalPeriodException("Inflation rate data is available only starting from January 2000.");
             }
 
-            if (value < 0) {
-                throw new DomainArgumentOutOfRangeException(nameof(value), "Inflation rate cannot be negative.");
+            if (rate < 0) {
+                throw new DomainArgumentOutOfRangeException(nameof(rate), "Inflation rate cannot be negative.");
             }
 
             Date = normalizedDate;
-            Value = value;
+            Rate = rate;
         }
     }
 }

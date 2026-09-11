@@ -16,7 +16,7 @@ namespace InflationMonitor.Persistence.Configurations {
             builder.Property(x => x.Month)
                 .IsRequired();
 
-            builder.Property(x => x.Value)
+            builder.Property(x => x.Rate)
                 .HasPrecision(18, 6)
                 .IsRequired();
         }
