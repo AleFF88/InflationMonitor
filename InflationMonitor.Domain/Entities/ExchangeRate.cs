@@ -23,7 +23,7 @@ namespace InflationMonitor.Domain.Entities {
 
             // Global lower bound for Ukrainian monetary system (Hryvnia introduced in Sept 1996)
             if (year < 1996 || (year == 1996 && month < 9)) {
-                throw new InvalidHistoricalPeriodException("Financial data is available only starting from September 1996.");
+                throw new InvalidHistoricalPeriodException("Historical financial data for the Ukrainian Hryvnia (UAH) is only available starting from September 1996 (monetary reform).");
             }
 
             if (month < 1 || month > 12) {
