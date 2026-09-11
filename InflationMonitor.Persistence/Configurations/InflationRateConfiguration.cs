@@ -7,15 +7,12 @@ namespace InflationMonitor.Persistence.Configurations {
         public void Configure(EntityTypeBuilder<InflationRate> builder) {
             builder.HasKey(x => x.Id);
 
-            builder.HasIndex(x => new { x.Year, x.Month })
+            builder.HasIndex(x => new { x.Date })
                 .IsUnique();
 
-            builder.Property(x => x.Year)
-                .IsRequired();
+            builder.Property(x => x.Date)
 
-            builder.Property(x => x.Month)
                 .IsRequired();
-
             builder.Property(x => x.Rate)
                 .HasPrecision(18, 6)
                 .IsRequired();

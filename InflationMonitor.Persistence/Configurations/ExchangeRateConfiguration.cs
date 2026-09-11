@@ -7,17 +7,14 @@ namespace InflationMonitor.Persistence.Configurations {
         public void Configure(EntityTypeBuilder<ExchangeRate> builder) {
             builder.HasKey(x => x.Id);
 
-            builder.HasIndex(x => new { x.CurrencyCode, x.Year, x.Month })
+            builder.HasIndex(x => new { x.CurrencyCode, x.Date})
                 .IsUnique();
 
             builder.Property(x => x.CurrencyCode)
                 .HasMaxLength(3)
                 .IsRequired();
 
-            builder.Property(x => x.Year)
-                .IsRequired();
-
-            builder.Property(x => x.Month)
+            builder.Property(x => x.Date)
                 .IsRequired();
 
             builder.Property(x => x.Rate)
