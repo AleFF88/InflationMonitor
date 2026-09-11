@@ -17,9 +17,8 @@ namespace InflationMonitor.Domain.Entities {
         [JsonConstructor]
         public InflationRate(int year, int month, decimal value) {
             if (year < 2000) {
-                throw new InvalidHistoricalPeriodException("Inflation rate has only been available since 2000.");
+                throw new InvalidHistoricalPeriodException("Inflation rate data is available only starting from January 2000.");
             }
-
             if (month < 1 || month > 12) {
                 throw new DomainArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
             }
@@ -27,9 +26,9 @@ namespace InflationMonitor.Domain.Entities {
             if (value < 0) {
                 throw new DomainArgumentOutOfRangeException(nameof(value), "Inflation rate cannot be negative.");
             }
-                Year = year;
-                Month = month;
-                Value = value;
+            Year = year;
+            Month = month;
+            Value = value;
         }
     }
 }
