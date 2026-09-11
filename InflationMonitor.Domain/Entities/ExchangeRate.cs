@@ -5,8 +5,7 @@ namespace InflationMonitor.Domain.Entities {
     public class ExchangeRate {
         public int Id { get; private set; }
         public string CurrencyCode { get; private set; } = string.Empty;
-        public int Year { get; private set; }
-        public int Month { get; private set; }
+        public DateOnly Date { get; private set; }
         public decimal Rate { get; private set; }
 
         // Required by Entity Framework Core to materialize objects from the database 
@@ -16,18 +15,17 @@ namespace InflationMonitor.Domain.Entities {
         // Used for explicitly creating valid domain instances and for JSON deserialization 
         //   during data seeding
         [JsonConstructor]
-        public ExchangeRate(string currencyCode, int year, int month, decimal rate) {
+        public ExchangeRate(string currencyCode, DateOnly date, decimal rate) {
             if (string.IsNullOrWhiteSpace(currencyCode)) {
                 throw new DomainArgumentOutOfRangeException(nameof(currencyCode), "Currency code cannot be null or empty.");
             }
 
-            // Global lower bound for Ukrainian monetary system (Hryvnia introduced in Sept 1996)
-            if (year < 1996 || (year == 1996 && month < 9)) {
-                throw new InvalidHistoricalPeriodException("Historical financial data for the Ukrainian Hryvnia (UAH) is only available starting from September 1996 (monetary reform).");
-            }
+            // Normalize the date to the 1st day of the month before validating bounds
+            var normalizedDate = new DateOnly(date.Year, date.Month, 1);
 
-            if (month < 1 || month > 12) {
-                throw new DomainArgumentOutOfRangeException(nameof(month), "Month must be between 1 and 12.");
+            // Global lower bound for Ukrainian monetary system (Hryvnia introduced in Sept 1996)
+            if (normalizedDate < new DateOnly(1996, 9, 1)) {
+                throw new InvalidHistoricalPeriodException("Historical financial data for the Ukrainian Hryvnia (UAH) is only available starting from September 1996 (monetary reform).");
             }
 
             if (rate <= 0) {
@@ -35,8 +33,7 @@ namespace InflationMonitor.Domain.Entities {
             }
 
             CurrencyCode = currencyCode.ToUpperInvariant();
-            Year = year;
-            Month = month;
+            Date = normalizedDate;
             Rate = rate;
         }
     }
