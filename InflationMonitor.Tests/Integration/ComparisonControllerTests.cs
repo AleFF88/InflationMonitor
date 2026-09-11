@@ -30,15 +30,15 @@ namespace InflationMonitorTests.Integration {
                 await dbContext.SaveChangesAsync();
 
                 dbContext.InflationRates.AddRange(
-                    new InflationRate(2023, 1, 1.01m),
-                    new InflationRate(2023, 2, 1.02m)
+                    new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
+                    new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
                 );
 
                 dbContext.ExchangeRates.AddRange(
-                    new ExchangeRate("USD", 2023, 1, 36.5m),
-                    new ExchangeRate("USD", 2023, 2, 37.0m),
-                    new ExchangeRate("EUR", 2023, 1, 40.0m),
-                    new ExchangeRate("EUR", 2023, 2, 41.0m)
+                    new ExchangeRate("USD", new DateOnly(2023, 1, 1), 36.5m),
+                    new ExchangeRate("USD", new DateOnly(2023, 2, 1), 37.0m),
+                    new ExchangeRate("EUR", new DateOnly(2023, 1, 1), 40.0m),
+                    new ExchangeRate("EUR", new DateOnly(2023, 2, 1), 41.0m)
                 );
 
                 await dbContext.SaveChangesAsync();
