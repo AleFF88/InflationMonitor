@@ -16,7 +16,7 @@ namespace InflationMonitor.Persistence.Seeding {
             // Seeding the USD exchange rates: the ratio of UAH to 1 USD
             await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "usd.json", x => x.CurrencyCode == "USD");
 
-            // Seeding the EUR exchange rates: the ratio of EUR to 1 USD
+            // Seeding the EUR exchange rates: the ratio of UAH to 1 EUR
             await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "eur.json", x => x.CurrencyCode == "EUR");
 
             await context.SaveChangesAsync();
