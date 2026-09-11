@@ -1,4 +1,5 @@
-﻿using InflationMonitor.Application.Common.Interfaces;
+﻿using InflationMonitor.Application.Common.Constants;
+using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -8,7 +9,7 @@ namespace InflationMonitor.Application.Strategies {
         private readonly IApplicationDbContext _context;
         private readonly IMemoryCache _cache;
 
-        public string CategoryKey => "Inflation";
+        public string CategoryKey => FinancialInstrumentCategories.Inflation;
 
         public InflationStrategy(IApplicationDbContext context, IMemoryCache cache) {
             _context = context;

@@ -1,4 +1,5 @@
-﻿using InflationMonitor.Domain.Entities;
+﻿using InflationMonitor.Application.Common.Constants;
+using InflationMonitor.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Text.Json;
@@ -14,10 +15,10 @@ namespace InflationMonitor.Persistence.Seeding {
             await SeedDataAsync<InflationRate>(context.InflationRates, "inflation.json");
 
             // Seeding the USD exchange rates: the ratio of UAH to 1 USD
-            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "usd.json", x => x.CurrencyCode == "USD");
+            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "usd.json", x => x.CurrencyCode == CurrencyCodes.Usd);
 
             // Seeding the EUR exchange rates: the ratio of UAH to 1 EUR
-            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "eur.json", x => x.CurrencyCode == "EUR");
+            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "eur.json", x => x.CurrencyCode == CurrencyCodes.Eur);
 
             await context.SaveChangesAsync();
         }

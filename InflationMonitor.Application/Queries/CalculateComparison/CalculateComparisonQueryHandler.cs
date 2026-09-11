@@ -1,4 +1,5 @@
-﻿using InflationMonitor.Application.Common.Interfaces;
+﻿using InflationMonitor.Application.Common.Constants;
+using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
 using MediatR;
 
@@ -13,7 +14,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
         public async Task<CalculateComparisonResponseDto> Handle(CalculateComparisonQuery request, CancellationToken cancellationToken) {
 
-            var inflationStrategy = _instrumentFactory.GetStrategy("Inflation");
+            var inflationStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Inflation);
             var inflationResults = await inflationStrategy.CalculateEquivalentsAsync(
                 [], 
                 request.StartDate,
@@ -21,9 +22,9 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 request.Amount, 
                 cancellationToken);
 
-            var currencyStrategy = _instrumentFactory.GetStrategy("Currencies");
+            var currencyStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Currencies);
             var currencyResults = await currencyStrategy.CalculateEquivalentsAsync(
-                ["USD", "EUR"], 
+                [CurrencyCodes.Usd, CurrencyCodes.Eur], 
                 request.StartDate, 
                 request.EndDate, 
                 request.Amount, 
@@ -35,9 +36,9 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 InitialAmount = request.Amount,
                 Summary = new FinancialComparisonSummaryDto {
                     CashGrivna = request.Amount,
-                    InflationEquivalent = inflationResults.GetValueOrDefault("Inflation"),
-                    UsdEquivalent = currencyResults.GetValueOrDefault("USD"),
-                    EurEquivalent = currencyResults.GetValueOrDefault("EUR")
+                    InflationEquivalent = inflationResults.GetValueOrDefault(FinancialInstrumentCategories.Inflation),
+                    UsdEquivalent = currencyResults.GetValueOrDefault(CurrencyCodes.Usd),
+                    EurEquivalent = currencyResults.GetValueOrDefault(CurrencyCodes.Eur)
                 }
             };
         }

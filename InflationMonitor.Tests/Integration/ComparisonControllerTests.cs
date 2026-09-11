@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Application.Dtos;
 using InflationMonitor.Domain.Entities;
 using InflationMonitor.Persistence;
@@ -35,10 +36,10 @@ namespace InflationMonitorTests.Integration {
                 );
 
                 dbContext.ExchangeRates.AddRange(
-                    new ExchangeRate("USD", new DateOnly(2023, 1, 1), 36.5m),
-                    new ExchangeRate("USD", new DateOnly(2023, 2, 1), 37.0m),
-                    new ExchangeRate("EUR", new DateOnly(2023, 1, 1), 40.0m),
-                    new ExchangeRate("EUR", new DateOnly(2023, 2, 1), 41.0m)
+                    new ExchangeRate(CurrencyCodes.Usd, new DateOnly(2023, 1, 1), 36.5m),
+                    new ExchangeRate(CurrencyCodes.Usd, new DateOnly(2023, 2, 1), 37.0m),
+                    new ExchangeRate(CurrencyCodes.Eur, new DateOnly(2023, 1, 1), 40.0m),
+                    new ExchangeRate(CurrencyCodes.Eur, new DateOnly(2023, 2, 1), 41.0m)
                 );
 
                 await dbContext.SaveChangesAsync();
