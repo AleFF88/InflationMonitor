@@ -84,8 +84,8 @@ namespace InflationMonitor.Application.Strategies {
 
         private static List<DateOnly> GetRequiredPeriods(DateOnly startDate, DateOnly endDate) {
             var periods = new List<DateOnly>();
-            var current = new DateOnly(startDate.Year, startDate.Month, 1);
-            var last = new DateOnly(endDate.Year, endDate.Month, 1);
+            var current = startDate;
+            var last = endDate;
 
             while (current <= last) {
                 periods.Add(current);

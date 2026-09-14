@@ -9,8 +9,10 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
         public decimal Amount { get; set; }
 
         public CalculateComparisonQuery(DateOnly startDate, DateOnly endDate, decimal amount) {
-            StartDate = startDate;
-            EndDate = endDate;
+            // Normalize dates to the 1st day of the month to guarantee exact key matching
+            //   with database records
+            StartDate = new DateOnly(startDate.Year, startDate.Month, 1);
+            EndDate = new DateOnly(endDate.Year, endDate.Month, 1);
             Amount = amount;
         }
     }

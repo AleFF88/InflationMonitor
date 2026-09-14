@@ -25,15 +25,10 @@ namespace InflationMonitor.Application.Strategies {
 
             var distinctCurrencyCodes = instrumentCodes.Select(c => c.ToUpperInvariant()).Distinct().ToList();
 
-            // Normalize dates to the 1st day of the month to guarantee exact key matching
-            //   with domain constructors and database records
-            var normalizedStart = new DateOnly(startDate.Year, startDate.Month, 1);
-            var normalizedEnd = new DateOnly(endDate.Year, endDate.Month, 1);
-
             // Check cache for both start and end dates of each requested currency 
             var fetchedRates = new Dictionary<string, ExchangeRate>();
             var missingRatesMap = new Dictionary<string, (string CurrencyCode, DateOnly Date)>();
-            var datesToCheck = new[] { normalizedStart, normalizedEnd };
+            var datesToCheck = new[] { startDate, endDate };
             foreach (var currencyCode in distinctCurrencyCodes) {
                 foreach (var date in datesToCheck) {
                     var periodKey = $"{currencyCode}_{date:yyyy-MM-01}";
@@ -76,8 +71,8 @@ namespace InflationMonitor.Application.Strategies {
             var result = new Dictionary<string, decimal?>();
             var warnings = new List<string>();
             foreach (var currencyCode in distinctCurrencyCodes) {
-                var startPeriodKey = $"{currencyCode}_{normalizedStart:yyyy-MM-01}";
-                var endPeriodKey = $"{currencyCode}_{normalizedEnd:yyyy-MM-01}";
+                var startPeriodKey = $"{currencyCode}_{startDate:yyyy-MM-01}";
+                var endPeriodKey = $"{currencyCode}_{endDate:yyyy-MM-01}";
 
                 var hasStart = fetchedRates.TryGetValue(startPeriodKey, out var startRate);
                 var hasEnd = fetchedRates.TryGetValue(endPeriodKey, out var endRate);
@@ -85,8 +80,8 @@ namespace InflationMonitor.Application.Strategies {
                 if (!hasStart || !hasEnd || startRate == null || endRate == null) {
                     result[currencyCode] = null;
 
-                    if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && normalizedStart < minSupportedDate) {
-                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {normalizedStart:yyyy-MM} was requested.");
+                    if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && startDate < minSupportedDate) {
+                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {startDate:yyyy-MM} was requested.");
                     } else {
                         warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
                     }
