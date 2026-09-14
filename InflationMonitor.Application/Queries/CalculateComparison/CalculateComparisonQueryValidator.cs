@@ -16,8 +16,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 .LessThanOrEqualTo(x => x.EndDate)
                 .WithMessage("StartDate cannot be later than EndDate.");
 
-            // Normalize input date to the first day of the month (monthly basis)
-            RuleFor(x => new DateOnly(x.StartDate.Year, x.StartDate.Month, 1))
+            RuleFor(x => x.StartDate)
                 .GreaterThanOrEqualTo(MinSupportedDate)
                 .WithMessage("Historical data for the hryvnia is available only since September 2, 1996.");
         }
