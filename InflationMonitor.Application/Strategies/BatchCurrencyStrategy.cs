@@ -84,7 +84,13 @@ namespace InflationMonitor.Application.Strategies {
 
                 if (!hasStart || !hasEnd || startRate == null || endRate == null) {
                     result[currencyCode] = null;
-                    warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
+
+                    if (CurrencyCodes.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && normalizedStart < minSupportedDate) {
+                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {normalizedStart:yyyy-MM} was requested.");
+                    } else {
+                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
+                    }
+
                     continue;
                 }
 

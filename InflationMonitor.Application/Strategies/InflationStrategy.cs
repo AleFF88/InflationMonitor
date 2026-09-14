@@ -65,7 +65,11 @@ namespace InflationMonitor.Application.Strategies {
             var warnings = new List<string>();
             if (fetchedRates.Count != expectedMonthsCount) {
                 result[CategoryKey] = null;
-                warnings.Add("Inflation rate data is incomplete or unavailable for the requested period.");
+                if (requiredPeriods[0] < FinancialInstrumentCategories.InflationMinSupportedDate) {
+                    warnings.Add($"Inflation rate data is available only starting from {FinancialInstrumentCategories.InflationMinSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested.");
+                } else {
+                    warnings.Add("Inflation rate data is incomplete or unavailable for the requested period.");
+                }
                 return new CalculationResult(result, warnings);
             }
 
