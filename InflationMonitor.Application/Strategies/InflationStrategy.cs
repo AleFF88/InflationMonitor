@@ -64,12 +64,15 @@ namespace InflationMonitor.Application.Strategies {
 
             var result = new Dictionary<string, decimal?>();
             var warnings = new List<string>();
+            var minSupportedDate = InflationConstants.InflationMinSupportedDates[InflationConstants.Codes.Cpi];
             if (fetchedRates.Count != expectedMonthsCount) {
-                result[CategoryKey] = null;
-                if (requiredPeriods[0] < InflationConstants.MinSupportedDate) {
-                    warnings.Add($"Inflation rate data is available only starting from {InflationConstants.MinSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested.");
+                var instrumentCode = InflationConstants.Codes.Cpi; 
+                result[instrumentCode] = null; 
+
+                if (requiredPeriods[0] < minSupportedDate) {
+                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested."); 
                 } else {
-                    warnings.Add("Inflation rate data is incomplete or unavailable for the requested period.");
+                    warnings.Add($"Historical inflation data for '{instrumentCode}' is incomplete or unavailable for the requested period."); 
                 }
                 return new CalculationResult(result, warnings);
             }
@@ -79,7 +82,7 @@ namespace InflationMonitor.Application.Strategies {
                 inflationMultiplier *= index.Rate;
             }
 
-            result[CategoryKey] = Math.Round(amount * inflationMultiplier, 2);
+            result[InflationConstants.Codes.Cpi] = Math.Round(amount * inflationMultiplier, 2);
             return new CalculationResult(result, warnings);
         }
 

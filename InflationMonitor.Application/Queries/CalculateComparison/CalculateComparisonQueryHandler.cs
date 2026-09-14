@@ -36,7 +36,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 InitialAmount = request.Amount,
                 Summary = new FinancialComparisonSummaryDto {
                     CashGrivna = request.Amount,
-                    InflationEquivalent = inflationResult.Equivalents.GetValueOrDefault(FinancialInstrumentCategories.Inflation),
+                    InflationEquivalent = inflationResult.Equivalents.GetValueOrDefault(InflationConstants.Codes.Cpi),
                     UsdEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyConstants.Codes.Usd),
                     EurEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyConstants.Codes.Eur)
                 },
