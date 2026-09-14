@@ -1,6 +1,7 @@
 using InflationMonitor.Application;
 using InflationMonitor.Persistence;
 using InflationMonitor.Persistence.Seeding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
 
@@ -49,7 +50,14 @@ namespace InflationMonitor.WebApi {
 
                 // Automatic data seeding in development environment (for testing and development purposes)
                 using (var scope = app.Services.CreateScope()) {
+                    // Resolve ApplicationDbContext instance from the service provider scope
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                    // Applies any pending migrations for the context to the database.
+                    //   Will create the database and tables if they do not exist yet.
+                    await dbContext.Database.MigrateAsync();
+
+                    // Seed initial historical financial data into the database if tables are empty
                     await DbContextSeeder.SeedAsync(dbContext);
                 }
 
