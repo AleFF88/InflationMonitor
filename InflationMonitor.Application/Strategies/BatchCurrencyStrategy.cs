@@ -25,13 +25,13 @@ namespace InflationMonitor.Application.Strategies {
 
             var distinctCurrencyCodes = instrumentCodes.Select(c => c.ToUpperInvariant()).Distinct().ToList();
 
-            // Check cache for both start and end dates of each requested currency 
+            // Collect rates available in memory cache and track missing rates
             var fetchedRates = new Dictionary<string, ExchangeRate>();
             var missingRatesMap = new Dictionary<string, (string CurrencyCode, DateOnly Date)>();
             var datesToCheck = new[] { startDate, endDate };
             foreach (var currencyCode in distinctCurrencyCodes) {
                 foreach (var date in datesToCheck) {
-                    var periodKey = $"{currencyCode}_{date:yyyy-MM-01}";
+                    var periodKey = BuildPeriodKey(currencyCode, date);
                     var cacheKey = $"currency_{periodKey}";
 
                     if (_cache.TryGetValue(cacheKey, out ExchangeRate? cachedRate) && cachedRate != null) {
@@ -53,55 +53,23 @@ namespace InflationMonitor.Application.Strategies {
                                 && targetDates.Contains(x.Date))
                     .ToListAsync(cancellationToken);
 
-                // Store rates not cached earlier to the memory cache and enrich local collection 
-                //   to perform the calculations for the requested period 
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSize(1)
-                    .SetAbsoluteExpiration(TimeSpan.FromDays(10));
-
-                foreach (var rate in fetchedFromDb) {
-                    var periodKey = $"{rate.CurrencyCode}_{rate.Date:yyyy-MM-01}";
-                    var cacheKey = $"currency_{periodKey}";
-                    _cache.Set(cacheKey, rate, cacheEntryOptions);
-                    fetchedRates[periodKey] = rate;
-                }
+                CacheAndStoreRates(fetchedFromDb, fetchedRates);
             }
 
             // Calculate final financial equivalents for each currency using collected rates
             var result = new Dictionary<string, decimal?>();
             var warnings = new List<string>();
             foreach (var currencyCode in distinctCurrencyCodes) {
-                var startPeriodKey = $"{currencyCode}_{startDate:yyyy-MM-01}";
-                var endPeriodKey = $"{currencyCode}_{endDate:yyyy-MM-01}";
+                var startPeriodKey = BuildPeriodKey(currencyCode, startDate); 
+                var endPeriodKey = BuildPeriodKey(currencyCode, endDate); 
 
                 var hasStart = fetchedRates.TryGetValue(startPeriodKey, out var startRate);
                 var hasEnd = fetchedRates.TryGetValue(endPeriodKey, out var endRate);
 
                 if (!hasStart || !hasEnd || startRate == null || endRate == null) {
                     result[currencyCode] = null;
-
-                    if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && startDate < minSupportedDate) {
-                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {startDate:yyyy-MM} was requested.");
-                    } else {
-                        // Reuse IMemoryCache to get or store the latest available date for this currency
-                        var cacheKey = $"currency_max_date_{currencyCode.ToLowerInvariant()}";
-                        var maxCurrencyDate = await _cache.GetOrCreateAsync(cacheKey, async entry => { 
-                            entry.SetSize(1); 
-                            entry.SetAbsoluteExpiration(TimeSpan.FromHours(12)); 
-                            return await _context.ExchangeRates 
-                                .AsNoTracking() 
-                                .Where(x => x.CurrencyCode == currencyCode) 
-                                .MaxAsync(x => (DateOnly?)x.Date, cancellationToken); 
-                        });
-
-                        if (maxCurrencyDate.HasValue && endDate > maxCurrencyDate.Value) {
-                            warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only up to {maxCurrencyDate.Value:yyyy-MM}, but {endDate:yyyy-MM} was requested.");
-                        } else {
-                            warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
-                        }
-
-                    }
-
+                    var warning = await BuildWarningForMissingRateAsync(currencyCode, startDate, endDate, cancellationToken);
+                    warnings.Add(warning);
                     continue;
                 }
 
@@ -110,6 +78,67 @@ namespace InflationMonitor.Application.Strategies {
             }
 
             return new CalculationResult(result, warnings);
+        }
+
+        /// <summary>
+        /// Caches fetched exchange rates in memory and updates the local rates collection.
+        /// </summary>
+        private void CacheAndStoreRates(IEnumerable<ExchangeRate> rates, Dictionary<string, ExchangeRate> fetchedRates) { 
+            var cacheEntryOptions = new MemoryCacheEntryOptions() 
+                .SetSize(1) 
+                .SetAbsoluteExpiration(TimeSpan.FromDays(10)); 
+
+            foreach (var rate in rates) { 
+                var periodKey = BuildPeriodKey(rate.CurrencyCode, rate.Date); 
+                var cacheKey = $"currency_{periodKey}"; 
+                _cache.Set(cacheKey, rate, cacheEntryOptions); 
+                fetchedRates[periodKey] = rate; 
+            } 
+        } 
+
+        /// <summary>
+        /// Generates a standardized composite period key for a currency and date.
+        /// </summary>
+        private static string BuildPeriodKey(string currencyCode, DateOnly date) => 
+            $"{currencyCode}_{date:yyyy-MM-01}";
+
+        /// <summary> 
+        /// Evaluates date boundaries for missing rates and constructs a user-friendly warning message.
+        /// Queries and caches the maximum available currency date if the end boundary fails validation.  
+        /// </summary> 
+        private async Task<string> BuildWarningForMissingRateAsync(
+            string currencyCode,
+            DateOnly startDate,
+            DateOnly endDate,
+            CancellationToken cancellationToken) {
+            if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && startDate < minSupportedDate) {
+                return $"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {startDate:yyyy-MM} was requested.";
+            }
+
+            var maxCurrencyDate = await GetMaxAvailableCurrencyDateAsync(currencyCode, cancellationToken);
+
+            if (maxCurrencyDate.HasValue && endDate > maxCurrencyDate.Value) {
+                return $"Historical exchange rate data for '{currencyCode}' is available only up to {maxCurrencyDate.Value:yyyy-MM}, but {endDate:yyyy-MM} was requested.";
+            }
+
+            return $"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.";
+        }
+
+
+        /// <summary> 
+        /// Retrieves the latest available rate date for a given currency from the database, 
+        /// caching the result in memory to prevent repeated query executions. 
+        /// </summary> 
+        private async Task<DateOnly?> GetMaxAvailableCurrencyDateAsync(string currencyCode, CancellationToken cancellationToken) {
+            var cacheKey = $"currency_max_date_{currencyCode.ToLowerInvariant()}";
+            return await _cache.GetOrCreateAsync(cacheKey, async entry => {
+                entry.SetSize(1);
+                entry.SetAbsoluteExpiration(TimeSpan.FromHours(12));
+                return await _context.ExchangeRates
+                    .AsNoTracking()
+                    .Where(x => x.CurrencyCode == currencyCode)
+                    .MaxAsync(x => (DateOnly?)x.Date, cancellationToken);
+            });
         }
     }
 }
