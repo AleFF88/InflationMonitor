@@ -2,52 +2,55 @@
 using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Application.Dtos;
 using InflationMonitor.Domain.Entities;
-using InflationMonitor.Persistence;
 using InflationMonitor.Tests.Integration;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace InflationMonitorTests.Integration {
+    /// <summary>
+    /// Integration tests for the comparison calculator endpoint.
+    /// Verifies the HTTP API responses and underlying calculation logic against seeded database states.
+    /// </summary>
     public class ComparisonControllerTests : IClassFixture<CustomWebApplicationFactory> {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory _factory;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComparisonControllerTests"/> class.
+        /// </summary>
+        /// <param name="factory">The WebApplicationFactory fixture for managing the test server state.</param>
         public ComparisonControllerTests(CustomWebApplicationFactory factory) {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
+        /// <summary>
+        /// Verifies that the endpoint returns 200 OK and accurate calculated equivalents 
+        /// when full dataset for inflation and currencies is available.
+        /// </summary>
         [Fact]
         public async Task Compare_ShouldReturnOkAndCorrectCalculationResult() {
 
-            // Arrange
-            using (var scope = _factory.Services.CreateScope()) {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Arrange: Prepare test datasets for inflation and exchange rates
+            var inflationRates = new[] {
+                new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
+                new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
+            };
 
-                dbContext.InflationRates.RemoveRange(dbContext.InflationRates);
-                dbContext.ExchangeRates.RemoveRange(dbContext.ExchangeRates);
-                await dbContext.SaveChangesAsync();
+            var exchangeRates = new[] {
+                new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
+                new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m),
+                new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 1, 1), 40.0m),
+                new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 2, 1), 41.0m)
+            };
 
-                dbContext.InflationRates.AddRange(
-                    new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
-                    new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
-                );
+            // Seed database using the web application factory helper
+            await _factory.SeedDataAsync(inflationRates, exchangeRates);
 
-                dbContext.ExchangeRates.AddRange(
-                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
-                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m),
-                    new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 1, 1), 40.0m),
-                    new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 2, 1), 41.0m)
-                );
-
-                await dbContext.SaveChangesAsync();
-            }
-
-            // Act
+            // Act: Send request to the comparison API endpoint
             var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=1000");
 
-            //Assert
+            // Assert: Verify HTTP status code and response payload calculations
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var result = await response.Content.ReadFromJsonAsync<CalculateComparisonResponseDto>();
@@ -63,34 +66,31 @@ namespace InflationMonitorTests.Integration {
 
         }
 
+        /// <summary>
+        /// Verifies that the endpoint returns 200 OK with appropriate warning messages 
+        /// when some requested currency data is missing in the database.
+        /// </summary>
         [Fact]
         public async Task CalculateComparison_WhenCurrencyDataIsPartial_ReturnsOkWithWarnings() {
-            // Arrange
-            using (var scope = _factory.Services.CreateScope()) {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Arrange: Prepare incomplete datasets
+            var inflationRates = new[] {
+                new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
+                new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
+            };
 
-                dbContext.InflationRates.RemoveRange(dbContext.InflationRates);
-                dbContext.ExchangeRates.RemoveRange(dbContext.ExchangeRates);
-                await dbContext.SaveChangesAsync();
+            var exchangeRates = new[] {
+                new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
+                new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m) 
+                // Data for EUR is intentionally not added.
+            };
 
-                dbContext.InflationRates.AddRange(
-                    new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
-                    new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
-                );
+            // Seed database with partial data
+            await _factory.SeedDataAsync(inflationRates, exchangeRates);
 
-                dbContext.ExchangeRates.AddRange(
-                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
-                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m)
-                    // Data for EUR is intentionally not added.
-                );
-
-                await dbContext.SaveChangesAsync();
-            }
-
-            // Act
+            // Act: Perform the calculation request
             var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=1000");
 
-            // Assert
+            // Assert: Verify successful response status alongside warning information for missing EUR
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var result = await response.Content.ReadFromJsonAsync<CalculateComparisonResponseDto>();
@@ -100,17 +100,21 @@ namespace InflationMonitorTests.Integration {
             result!.Summary.UsdEquivalent.Should().Be(1013.70m);
             result.Summary.InflationEquivalent.Should().Be(1030.20m);
 
-            result.Summary.EurEquivalent.Should().BeNull(); 
-            result.Warnings.Should().NotBeEmpty(); 
-            result.Warnings.Should().Contain(w => w.Contains(CurrencyConstants.Codes.Eur)); 
+            result.Summary.EurEquivalent.Should().BeNull();
+            result.Warnings.Should().NotBeEmpty();
+            result.Warnings.Should().Contain(w => w.Contains(CurrencyConstants.Codes.Eur));
         }
 
+        /// <summary>
+        /// Verifies that the endpoint returns 400 Bad Request and validation error details 
+        /// when passed a negative or out-of-range amount query parameter.
+        /// </summary>
         [Fact]
         public async Task Compare_ShouldReturnBadRequest_WhenAmountIsInvalid() {
-            // Act
+            // Act: Send request with negative initial amount (amount=-100)
             var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=-100");
 
-            // Assert
+            // Assert: Verify problem details returned for validation error
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
             var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
