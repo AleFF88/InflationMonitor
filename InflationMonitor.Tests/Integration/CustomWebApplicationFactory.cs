@@ -11,6 +11,9 @@ namespace InflationMonitor.Tests.Integration {
         private SqliteConnection? _connection;
 
         protected override void ConfigureWebHost(IWebHostBuilder builder) {
+            // Explicitly set the environment to "Testing" to skip Development-only blocks (like auto-seeding)
+            builder.UseEnvironment("Testing");
+
             builder.ConfigureServices(services => {
 
                 var descriptor = services.SingleOrDefault(
