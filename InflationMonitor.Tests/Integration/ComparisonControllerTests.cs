@@ -63,6 +63,49 @@ namespace InflationMonitorTests.Integration {
 
         }
 
+        // ===== D:\C#\InflationMonitor\InflationMonitor.Tests\Integration\ComparisonControllerTests.cs =====
+        [Fact]
+        public async Task CalculateComparison_WhenCurrencyDataIsPartial_ReturnsOkWithWarnings() {
+            // Arrange
+            using (var scope = _factory.Services.CreateScope()) {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                dbContext.InflationRates.RemoveRange(dbContext.InflationRates);
+                dbContext.ExchangeRates.RemoveRange(dbContext.ExchangeRates);
+                await dbContext.SaveChangesAsync();
+
+                dbContext.InflationRates.AddRange(
+                    new InflationRate(new DateOnly(2023, 1, 1), 1.01m),
+                    new InflationRate(new DateOnly(2023, 2, 1), 1.02m)
+                );
+
+                dbContext.ExchangeRates.AddRange(
+                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
+                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m)
+                    // Data for EUR is intentionally not added.
+                );
+
+                await dbContext.SaveChangesAsync();
+            }
+
+            // Act
+            var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=1000");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var result = await response.Content.ReadFromJsonAsync<CalculateComparisonResponseDto>();
+
+            result.Should().NotBeNull();
+
+            result!.Summary.UsdEquivalent.Should().Be(1013.70m);
+            result.Summary.InflationEquivalent.Should().Be(1030.20m);
+
+            result.Summary.EurEquivalent.Should().BeNull(); 
+            result.Warnings.Should().NotBeEmpty(); 
+            result.Warnings.Should().Contain(w => w.Contains(CurrencyConstants.Codes.Eur)); 
+        }
+
         [Fact]
         public async Task Compare_ShouldReturnInternalServerError_WhenAmountIsInvalid() {
             // Act
