@@ -75,7 +75,7 @@ namespace InflationMonitor.Application.Strategies {
             }
 
             decimal inflationMultiplier = 1.0m;
-            foreach (var index in fetchedRates) {
+            foreach (var index in fetchedRates.OrderBy(x => x.Date)) {
                 inflationMultiplier *= index.Rate;
             }
 
