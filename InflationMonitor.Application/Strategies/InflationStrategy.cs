@@ -23,16 +23,16 @@ namespace InflationMonitor.Application.Strategies {
             decimal amount,
             CancellationToken cancellationToken) {
 
-            // Generate full list of required periods (normalized to the 1st day of each month)
+            // Generate full list of required periods normalized to the 1st day of each month
             var requiredPeriods = GetRequiredPeriods(startDate, endDate);
             int expectedMonthsCount = requiredPeriods.Count;
 
             var fetchedRates = new List<InflationRate>();
             var missingPeriods = new List<DateOnly>();
 
-            // Retrieve available records from cache
+            // Collect rates available in memory cache and track missing periods
             foreach (var period in requiredPeriods) {
-                var cacheKey = $"inflation_{period:yyyy-MM-01}";
+                var cacheKey = $"inflation_{BuildPeriodKey(period)}";
 
                 if (_cache.TryGetValue(cacheKey, out InflationRate? cachedRate) && cachedRate != null) {
                     fetchedRates.Add(cachedRate);
@@ -41,7 +41,7 @@ namespace InflationMonitor.Application.Strategies {
                 }
             }
 
-            // Fetch missing rates from database if any entries were not found in cache
+            // Fetch missing rates from database in a single query if any entries were missing in cache
             if (missingPeriods.Count != 0) {
                 var fetchedFromDb = await _context.InflationRates
                     .AsNoTracking()
@@ -49,37 +49,24 @@ namespace InflationMonitor.Application.Strategies {
                     .OrderBy(x => x.Date)
                     .ToListAsync(cancellationToken);
 
-                // Store rates not cached earlier to the memory cache and enrich local collection 
-                //   to perform the calculations for the requested period
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSize(1)
-                    .SetAbsoluteExpiration(TimeSpan.FromDays(10));
-
-                foreach (var rate in fetchedFromDb) {
-                    var cacheKey = $"inflation_{rate.Date:yyyy-MM-01}";
-                    _cache.Set(cacheKey, rate, cacheEntryOptions);
-                    fetchedRates.Add(rate);
-                }
+                CacheAndStoreRates(fetchedFromDb, fetchedRates);
             }
 
             var result = new Dictionary<string, decimal?>();
             var warnings = new List<string>();
-            var minSupportedDate = InflationConstants.InflationMinSupportedDates[InflationConstants.Codes.Cpi];
+
+            // Validate completeness of fetched rates for requested range
             if (fetchedRates.Count != expectedMonthsCount) {
                 var instrumentCode = InflationConstants.Codes.Cpi;
                 result[instrumentCode] = null;
-                var maxFetchedDate = fetchedRates.MaxBy(x => x.Date)?.Date;
 
-                if (requiredPeriods[0] < minSupportedDate) {
-                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested.");
-                } else if (maxFetchedDate.HasValue && endDate > maxFetchedDate.Value) { 
-                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only up to {maxFetchedDate.Value:yyyy-MM}, but {endDate:yyyy-MM} was requested."); 
-                } else {
-                    warnings.Add($"Historical inflation data for '{instrumentCode}' is incomplete or unavailable for the requested period.");
-                }
+                var warning = BuildWarningForMissingRates(requiredPeriods[0], endDate, fetchedRates);
+                warnings.Add(warning);
+
                 return new CalculationResult(result, warnings);
             }
 
+            // Calculate compound inflation multiplier across the entire period
             decimal inflationMultiplier = 1.0m;
             foreach (var index in fetchedRates.OrderBy(x => x.Date)) {
                 inflationMultiplier *= index.Rate;
@@ -89,12 +76,58 @@ namespace InflationMonitor.Application.Strategies {
             return new CalculationResult(result, warnings);
         }
 
+        /// <summary>
+        /// Evaluates period boundaries for missing inflation records and produces a descriptive warning.
+        /// </summary>
+        private static string BuildWarningForMissingRates(
+            DateOnly requestedStartDate,
+            DateOnly requestedEndDate,
+            IReadOnlyCollection<InflationRate> fetchedRates) {
+
+            var instrumentCode = InflationConstants.Codes.Cpi;
+            var minSupportedDate = InflationConstants.InflationMinSupportedDates[instrumentCode];
+            var maxFetchedDate = fetchedRates.MaxBy(x => x.Date)?.Date;
+
+            if (requestedStartDate < minSupportedDate) {
+                return $"Historical inflation data for '{instrumentCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {requestedStartDate:yyyy-MM} was requested.";
+            }
+
+            if (maxFetchedDate.HasValue && requestedEndDate > maxFetchedDate.Value) {
+                return $"Historical inflation data for '{instrumentCode}' is available only up to {maxFetchedDate.Value:yyyy-MM}, but {requestedEndDate:yyyy-MM} was requested.";
+            }
+
+            return $"Historical inflation data for '{instrumentCode}' is incomplete or unavailable for the requested period.";
+        }
+
+        /// <summary>
+        /// Caches newly fetched inflation rates in memory and updates the local rates collection.
+        /// </summary>
+        private void CacheAndStoreRates(IEnumerable<InflationRate> rates, List<InflationRate> fetchedRates) {
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                .SetSize(1)
+                .SetAbsoluteExpiration(TimeSpan.FromDays(10));
+
+            foreach (var rate in rates) {
+                var cacheKey = $"inflation_{BuildPeriodKey(rate.Date)}";
+                _cache.Set(cacheKey, rate, cacheEntryOptions);
+                fetchedRates.Add(rate);
+            }
+        }
+
+        /// <summary>
+        /// Formats a period date into a standardized period key string (yyyy-MM-01).
+        /// </summary>
+        private static string BuildPeriodKey(DateOnly date) =>
+            $"{date:yyyy-MM-01}";
+
+        /// <summary>
+        /// Generates a sequential list of monthly dates between start and end boundaries.
+        /// </summary>
         private static List<DateOnly> GetRequiredPeriods(DateOnly startDate, DateOnly endDate) {
             var periods = new List<DateOnly>();
             var current = startDate;
-            var last = endDate;
 
-            while (current <= last) {
+            while (current <= endDate) {
                 periods.Add(current);
                 current = current.AddMonths(1);
             }
