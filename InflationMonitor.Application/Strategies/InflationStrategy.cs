@@ -16,7 +16,7 @@ namespace InflationMonitor.Application.Strategies {
             _cache = cache;
         }
 
-        public async Task<Dictionary<string, decimal?>> CalculateEquivalentsAsync(
+        public async Task<CalculationResult> CalculateEquivalentsAsync(
             IEnumerable<string> instrumentCodes,
             DateOnly startDate,
             DateOnly endDate,
@@ -62,13 +62,11 @@ namespace InflationMonitor.Application.Strategies {
             }
 
             var result = new Dictionary<string, decimal?>();
-
-            // TODO: Consider enriching the response DTO with metadata or warnings 
-            //   explaining why a calculation returned null (e.g., historical data for
-            //   requested period is missing).
+            var warnings = new List<string>();
             if (fetchedRates.Count != expectedMonthsCount) {
                 result[CategoryKey] = null;
-                return result;
+                warnings.Add("Inflation rate data is incomplete or unavailable for the requested period.");
+                return new CalculationResult(result, warnings);
             }
 
             decimal inflationMultiplier = 1.0m;
@@ -77,7 +75,7 @@ namespace InflationMonitor.Application.Strategies {
             }
 
             result[CategoryKey] = Math.Round(amount * inflationMultiplier, 2);
-            return result;
+            return new CalculationResult(result, warnings);
         }
 
         private static List<DateOnly> GetRequiredPeriods(DateOnly startDate, DateOnly endDate) {

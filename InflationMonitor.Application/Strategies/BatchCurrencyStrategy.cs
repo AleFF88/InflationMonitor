@@ -16,7 +16,7 @@ namespace InflationMonitor.Application.Strategies {
             _cache = cache;
         }
 
-        public async Task<Dictionary<string, decimal?>> CalculateEquivalentsAsync(
+        public async Task<CalculationResult> CalculateEquivalentsAsync(
             IEnumerable<string> instrumentCodes,
             DateOnly startDate,
             DateOnly endDate,
@@ -74,6 +74,7 @@ namespace InflationMonitor.Application.Strategies {
 
             // Calculate final financial equivalents for each currency using collected rates
             var result = new Dictionary<string, decimal?>();
+            var warnings = new List<string>();
             foreach (var currencyCode in distinctCurrencyCodes) {
                 var startPeriodKey = $"{currencyCode}_{normalizedStart:yyyy-MM-01}";
                 var endPeriodKey = $"{currencyCode}_{normalizedEnd:yyyy-MM-01}";
@@ -81,11 +82,9 @@ namespace InflationMonitor.Application.Strategies {
                 var hasStart = fetchedRates.TryGetValue(startPeriodKey, out var startRate);
                 var hasEnd = fetchedRates.TryGetValue(endPeriodKey, out var endRate);
 
-                // TODO: Consider enriching the response DTO with metadata or warnings 
-                //   explaining why a calculation returned null (e.g., historical data for
-                //   EUR is available only starting from 1999-01, but 1998-05 was requested).
                 if (!hasStart || !hasEnd || startRate == null || endRate == null) {
                     result[currencyCode] = null;
+                    warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
                     continue;
                 }
 
@@ -93,7 +92,7 @@ namespace InflationMonitor.Application.Strategies {
                 result[currencyCode] = Math.Round(currencyBought * endRate.Rate, 2);
             }
 
-            return result;
+            return new CalculationResult(result, warnings);
         }
     }
 }

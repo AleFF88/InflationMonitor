@@ -15,7 +15,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
         public async Task<CalculateComparisonResponseDto> Handle(CalculateComparisonQuery request, CancellationToken cancellationToken) {
 
             var inflationStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Inflation);
-            var inflationResults = await inflationStrategy.CalculateEquivalentsAsync(
+            var inflationResult = await inflationStrategy.CalculateEquivalentsAsync(
                 [], 
                 request.StartDate,
                 request.EndDate, 
@@ -23,7 +23,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 cancellationToken);
 
             var currencyStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Currencies);
-            var currencyResults = await currencyStrategy.CalculateEquivalentsAsync(
+            var currencyResult = await currencyStrategy.CalculateEquivalentsAsync(
                 [CurrencyCodes.Usd, CurrencyCodes.Eur], 
                 request.StartDate, 
                 request.EndDate, 
@@ -36,10 +36,11 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 InitialAmount = request.Amount,
                 Summary = new FinancialComparisonSummaryDto {
                     CashGrivna = request.Amount,
-                    InflationEquivalent = inflationResults.GetValueOrDefault(FinancialInstrumentCategories.Inflation),
-                    UsdEquivalent = currencyResults.GetValueOrDefault(CurrencyCodes.Usd),
-                    EurEquivalent = currencyResults.GetValueOrDefault(CurrencyCodes.Eur)
-                }
+                    InflationEquivalent = inflationResult.Equivalents.GetValueOrDefault(FinancialInstrumentCategories.Inflation),
+                    UsdEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyCodes.Usd),
+                    EurEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyCodes.Eur)
+                },
+                Warnings = inflationResult.Warnings.Concat(currencyResult.Warnings).ToList()   
             };
         }
     }

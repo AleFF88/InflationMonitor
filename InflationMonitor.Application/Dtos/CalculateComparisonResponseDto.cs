@@ -4,5 +4,6 @@
         public string EndDate { get; set; } = string.Empty;
         public decimal InitialAmount { get; set; }
         public FinancialComparisonSummaryDto Summary { get; set; } = new();
+        public List<string> Warnings { get; set; } = [];
     }
 }
