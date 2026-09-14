@@ -83,7 +83,23 @@ namespace InflationMonitor.Application.Strategies {
                     if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && startDate < minSupportedDate) {
                         warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {startDate:yyyy-MM} was requested.");
                     } else {
-                        warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
+                        // Reuse IMemoryCache to get or store the latest available date for this currency
+                        var cacheKey = $"currency_max_date_{currencyCode.ToLowerInvariant()}";
+                        var maxCurrencyDate = await _cache.GetOrCreateAsync(cacheKey, async entry => { 
+                            entry.SetSize(1); 
+                            entry.SetAbsoluteExpiration(TimeSpan.FromHours(12)); 
+                            return await _context.ExchangeRates 
+                                .AsNoTracking() 
+                                .Where(x => x.CurrencyCode == currencyCode) 
+                                .MaxAsync(x => (DateOnly?)x.Date, cancellationToken); 
+                        });
+
+                        if (maxCurrencyDate.HasValue && endDate > maxCurrencyDate.Value) {
+                            warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only up to {maxCurrencyDate.Value:yyyy-MM}, but {endDate:yyyy-MM} was requested.");
+                        } else {
+                            warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");
+                        }
+
                     }
 
                     continue;
