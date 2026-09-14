@@ -63,7 +63,6 @@ namespace InflationMonitorTests.Integration {
 
         }
 
-        // ===== D:\C#\InflationMonitor\InflationMonitor.Tests\Integration\ComparisonControllerTests.cs =====
         [Fact]
         public async Task CalculateComparison_WhenCurrencyDataIsPartial_ReturnsOkWithWarnings() {
             // Arrange
@@ -107,7 +106,7 @@ namespace InflationMonitorTests.Integration {
         }
 
         [Fact]
-        public async Task Compare_ShouldReturnInternalServerError_WhenAmountIsInvalid() {
+        public async Task Compare_ShouldReturnBadRequest_WhenAmountIsInvalid() {
             // Act
             var response = await _client.GetAsync("/api/calculator/compare?startDate=2023-01-01&endDate=2023-02-01&amount=-100");
 
