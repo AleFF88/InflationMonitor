@@ -15,7 +15,8 @@ namespace InflationMonitor.Domain.Entities {
         //   during data seeding
         [JsonConstructor]
         public InflationRate(DateOnly date, decimal rate) {
-            // Normalize the date to the 1st day of the month before validating bounds
+            // Normalize the date to the 1st day of the month to enforce monthly domain invariant 
+            //   and guarantee uniform key formatting during direct entity instantiation or seeding 
             var normalizedDate = new DateOnly(date.Year, date.Month, 1);
 
             // Global lower bound for official Ukrainian inflation index recording
