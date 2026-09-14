@@ -46,6 +46,7 @@ namespace InflationMonitor.Application.Strategies {
                 var fetchedFromDb = await _context.InflationRates
                     .AsNoTracking()
                     .Where(x => missingPeriods.Contains(x.Date))
+                    .OrderBy(x => x.Date)
                     .ToListAsync(cancellationToken);
 
                 // Store rates not cached earlier to the memory cache and enrich local collection 
