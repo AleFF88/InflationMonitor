@@ -24,7 +24,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
 
             var currencyStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Currencies);
             var currencyResult = await currencyStrategy.CalculateEquivalentsAsync(
-                [CurrencyCodes.Usd, CurrencyCodes.Eur], 
+                [CurrencyConstants.Codes.Usd, CurrencyConstants.Codes.Eur], 
                 request.StartDate, 
                 request.EndDate, 
                 request.Amount, 
@@ -37,8 +37,8 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
                 Summary = new FinancialComparisonSummaryDto {
                     CashGrivna = request.Amount,
                     InflationEquivalent = inflationResult.Equivalents.GetValueOrDefault(FinancialInstrumentCategories.Inflation),
-                    UsdEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyCodes.Usd),
-                    EurEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyCodes.Eur)
+                    UsdEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyConstants.Codes.Usd),
+                    EurEquivalent = currencyResult.Equivalents.GetValueOrDefault(CurrencyConstants.Codes.Eur)
                 },
                 Warnings = inflationResult.Warnings.Concat(currencyResult.Warnings).ToList()   
             };

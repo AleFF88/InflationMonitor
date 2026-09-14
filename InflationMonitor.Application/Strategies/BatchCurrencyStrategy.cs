@@ -9,7 +9,7 @@ namespace InflationMonitor.Application.Strategies {
         private readonly IApplicationDbContext _context;
         private readonly IMemoryCache _cache;
 
-        public string CategoryKey => FinancialInstrumentCategories.Currencies;
+        public string CategoryKey => CurrencyConstants.CategoryKey;
 
         public BatchCurrencyStrategy(IApplicationDbContext context, IMemoryCache cache) {
             _context = context;
@@ -85,7 +85,7 @@ namespace InflationMonitor.Application.Strategies {
                 if (!hasStart || !hasEnd || startRate == null || endRate == null) {
                     result[currencyCode] = null;
 
-                    if (CurrencyCodes.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && normalizedStart < minSupportedDate) {
+                    if (CurrencyConstants.CurrencyMinSupportedDates.TryGetValue(currencyCode, out var minSupportedDate) && normalizedStart < minSupportedDate) {
                         warnings.Add($"Historical exchange rate data for '{currencyCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {normalizedStart:yyyy-MM} was requested.");
                     } else {
                         warnings.Add($"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.");

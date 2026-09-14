@@ -5,7 +5,6 @@ using InflationMonitor.Domain.Entities;
 using InflationMonitor.Persistence;
 using InflationMonitor.Tests.Integration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -36,10 +35,10 @@ namespace InflationMonitorTests.Integration {
                 );
 
                 dbContext.ExchangeRates.AddRange(
-                    new ExchangeRate(CurrencyCodes.Usd, new DateOnly(2023, 1, 1), 36.5m),
-                    new ExchangeRate(CurrencyCodes.Usd, new DateOnly(2023, 2, 1), 37.0m),
-                    new ExchangeRate(CurrencyCodes.Eur, new DateOnly(2023, 1, 1), 40.0m),
-                    new ExchangeRate(CurrencyCodes.Eur, new DateOnly(2023, 2, 1), 41.0m)
+                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 1, 1), 36.5m),
+                    new ExchangeRate(CurrencyConstants.Codes.Usd, new DateOnly(2023, 2, 1), 37.0m),
+                    new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 1, 1), 40.0m),
+                    new ExchangeRate(CurrencyConstants.Codes.Eur, new DateOnly(2023, 2, 1), 41.0m)
                 );
 
                 await dbContext.SaveChangesAsync();

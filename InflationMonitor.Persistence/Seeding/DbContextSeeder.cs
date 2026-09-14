@@ -15,10 +15,10 @@ namespace InflationMonitor.Persistence.Seeding {
             await SeedDataAsync<InflationRate>(context.InflationRates, "inflation.json");
 
             // Seeding the USD exchange rates: the ratio of UAH to 1 USD
-            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "usd.json", x => x.CurrencyCode == CurrencyCodes.Usd);
+            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "usd.json", x => x.CurrencyCode == CurrencyConstants.Codes.Usd);
 
             // Seeding the EUR exchange rates: the ratio of UAH to 1 EUR
-            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "eur.json", x => x.CurrencyCode == CurrencyCodes.Eur);
+            await SeedDataAsync<ExchangeRate>(context.ExchangeRates, "eur.json", x => x.CurrencyCode == CurrencyConstants.Codes.Eur);
 
             await context.SaveChangesAsync();
         }
