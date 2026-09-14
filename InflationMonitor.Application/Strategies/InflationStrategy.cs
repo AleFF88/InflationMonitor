@@ -66,13 +66,16 @@ namespace InflationMonitor.Application.Strategies {
             var warnings = new List<string>();
             var minSupportedDate = InflationConstants.InflationMinSupportedDates[InflationConstants.Codes.Cpi];
             if (fetchedRates.Count != expectedMonthsCount) {
-                var instrumentCode = InflationConstants.Codes.Cpi; 
-                result[instrumentCode] = null; 
+                var instrumentCode = InflationConstants.Codes.Cpi;
+                result[instrumentCode] = null;
+                var maxFetchedDate = fetchedRates.MaxBy(x => x.Date)?.Date;
 
                 if (requiredPeriods[0] < minSupportedDate) {
-                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested."); 
+                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only starting from {minSupportedDate:yyyy-MM}, but {requiredPeriods[0]:yyyy-MM} was requested.");
+                } else if (maxFetchedDate.HasValue && endDate > maxFetchedDate.Value) { 
+                    warnings.Add($"Historical inflation data for '{instrumentCode}' is available only up to {maxFetchedDate.Value:yyyy-MM}, but {endDate:yyyy-MM} was requested."); 
                 } else {
-                    warnings.Add($"Historical inflation data for '{instrumentCode}' is incomplete or unavailable for the requested period."); 
+                    warnings.Add($"Historical inflation data for '{instrumentCode}' is incomplete or unavailable for the requested period.");
                 }
                 return new CalculationResult(result, warnings);
             }
