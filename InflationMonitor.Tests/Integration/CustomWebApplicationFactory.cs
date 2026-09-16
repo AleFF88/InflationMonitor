@@ -1,5 +1,6 @@
 ﻿using InflationMonitor.Domain.Entities; 
 using InflationMonitor.Persistence;
+using InflationMonitor.Tests.Helpers;
 using InflationMonitor.WebApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -25,7 +26,6 @@ namespace InflationMonitor.Tests.Integration {
             builder.UseEnvironment("Testing");
 
             builder.ConfigureServices(services => {
-
                 // Locate and remove the original DbContextOptions registration from the main application
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
@@ -33,22 +33,14 @@ namespace InflationMonitor.Tests.Integration {
                     services.Remove(descriptor);
                 }
 
-                // Create and open a single SQLite in-memory connection (kept open to prevent DB deletion)
-                _connection = new SqliteConnection("DataSource=:memory:");
-                _connection.Open();
+                // Create in-memory database using shared DbContextFactory
+                var (context, connection) = DbContextFactory.CreateInMemoryDbContext();
+                _connection = connection;
 
                 // Register ApplicationDbContext using the SQLite In-Memory connection
                 services.AddDbContext<ApplicationDbContext>(options => {
                     options.UseSqlite(_connection);
                 });
-
-                // Build a temporary ServiceProvider for initial database schema setup
-                var sp = services.BuildServiceProvider();
-                using var scope = sp.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                // Ensure the database schema is created based on EF Core models
-                db.Database.EnsureCreated();
             });
         }
 
