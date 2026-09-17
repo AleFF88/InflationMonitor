@@ -1,4 +1,4 @@
-﻿using InflationMonitor.Domain.Entities; 
+﻿using InflationMonitor.Domain.Entities;
 using InflationMonitor.Persistence;
 using InflationMonitor.Tests.Helpers;
 using InflationMonitor.WebApi;
@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InflationMonitor.Tests.Integration {
+namespace InflationMonitor.Tests.Integration.WebApplicationFactory {
     /// <summary>
     /// Custom factory for bootstrapping the test web server and setting up
     /// in-memory SQLite database isolation for integration tests.
@@ -59,6 +60,12 @@ namespace InflationMonitor.Tests.Integration {
             dbContext.InflationRates.RemoveRange(dbContext.InflationRates); 
             dbContext.ExchangeRates.RemoveRange(dbContext.ExchangeRates); 
             await dbContext.SaveChangesAsync();
+
+            // Сlear all entries from MemoryCache to prevent cross-test data pollution 
+            var cache = scope.ServiceProvider.GetService<IMemoryCache>(); 
+            if (cache is MemoryCache memoryCache) {                       
+                memoryCache.Compact(1.0);                                 
+            }
 
             // Insert new inflation rates if provided
             if (inflationRates != null) { 

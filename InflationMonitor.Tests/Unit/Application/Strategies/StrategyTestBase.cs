@@ -3,7 +3,7 @@ using InflationMonitor.Tests.Helpers;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.Strategies {
     /// <summary>
     /// Abstract base class for unit tests targeting strategy implementations.
     /// Manages an isolated SQLite In-Memory database instance and an <see cref="IMemoryCache"/> lifecycle per test.

@@ -4,7 +4,7 @@ using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Queries.CalculateComparison;
 using Moq;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.CalculateComparison {
     /// <summary>
     /// Unit tests for the <see cref="CalculateComparisonQueryHandler"/> class.
     /// Validates strategy factory orchestration, key resolution, data mapping to DTO, 

@@ -5,7 +5,7 @@ using InflationMonitor.Domain.Entities;
 using Microsoft.Extensions.Caching.Memory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.Strategies {
     /// <summary>
     /// Unit tests for the <see cref="InflationStrategy"/> class.
     /// Validates compound inflation calculations, gaps in database records, 

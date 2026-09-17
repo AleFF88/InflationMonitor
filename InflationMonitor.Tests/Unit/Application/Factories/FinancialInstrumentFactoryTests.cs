@@ -4,7 +4,7 @@ using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Factories;
 using Moq;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.Factories {
     /// <summary>
     /// Unit tests for the <see cref="FinancialInstrumentFactory"/> implementation.
     /// Verifies strategy resolution by category key and handling of unsupported categories.

@@ -3,7 +3,7 @@ using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Application.Common.Interfaces;
 using InflationMonitor.Application.Dtos;
 using InflationMonitor.Domain.Entities;
-using InflationMonitor.Tests.Integration;
+using InflationMonitor.Tests.Integration.WebApplicationFactory;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
@@ -13,7 +13,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace InflationMonitorTests.Integration {
+namespace InflationMonitor.Tests.Integration.Controllers {
     /// <summary>
     /// Integration tests for the comparison calculator endpoint.
     /// Verifies the HTTP API responses and underlying calculation logic against seeded database states.
@@ -124,7 +124,7 @@ namespace InflationMonitorTests.Integration {
             // Assert: Verify problem details returned for validation error
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-            var problemDetails = await response.Content.ReadFromJsonAsync<Microsoft.AspNetCore.Mvc.ProblemDetails>();
+            var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
             problemDetails.Should().NotBeNull();
             problemDetails!.Title.Should().Be("Validation Error");
         }

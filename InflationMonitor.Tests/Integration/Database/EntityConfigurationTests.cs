@@ -2,11 +2,12 @@
 using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Domain.Entities;
 using InflationMonitor.Persistence;
+using InflationMonitor.Tests.Integration.WebApplicationFactory;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InflationMonitor.Tests.Integration {
+namespace InflationMonitor.Tests.Integration.Database {
     /// <summary>
     /// Integration tests for Entity Framework Core entity configurations and database constraints.
     /// Verifies that unique constraints, indexes, and mapping rules are correctly enforced at the database level.

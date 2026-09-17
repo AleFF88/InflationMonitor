@@ -5,7 +5,7 @@ using InflationMonitor.Application.Common.Behaviors;
 using MediatR;
 using Moq;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.Behaviors {
     /// <summary>
     /// Unit tests for the MediatR <see cref="ValidationBehavior{TRequest, TResponse}"/> pipeline step.
     /// Verifies behavior execution with valid payloads and exception throwing on validation failures.

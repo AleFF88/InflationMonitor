@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using InflationMonitor.Application.Queries.CalculateComparison;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.CalculateComparison {
     /// <summary>
     /// Unit tests for the <see cref="CalculateComparisonQuery"/> request object.
     /// Verifies date normalization rules during query construction.

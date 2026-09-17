@@ -3,7 +3,7 @@ using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Application.Strategies;
 using InflationMonitor.Domain.Entities;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.Strategies {
     /// <summary>
     /// Unit tests for the <see cref="BatchCurrencyStrategy"/> class.
     /// Validates currency conversions using initial and target exchange rates, gap handling, 

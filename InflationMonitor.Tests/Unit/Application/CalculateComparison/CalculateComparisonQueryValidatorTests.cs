@@ -1,7 +1,7 @@
 ﻿using FluentValidation.TestHelper;
 using InflationMonitor.Application.Queries.CalculateComparison;
 
-namespace InflationMonitor.Tests.Unit.Application {
+namespace InflationMonitor.Tests.Unit.Application.CalculateComparison {
     /// <summary>
     /// Unit tests for the <see cref="CalculateComparisonQueryValidator"/> FluentValidation class.
     /// Verifies input parameters, lower historical date boundaries, and future date constraints.
