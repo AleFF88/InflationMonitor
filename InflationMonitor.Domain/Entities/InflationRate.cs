@@ -2,6 +2,10 @@
 using System.Text.Json.Serialization;
 
 namespace InflationMonitor.Domain.Entities {
+    /// <summary>
+    /// Represents a historical monthly inflation rate domain entity, 
+    /// enforcing core domain rules, date normalization, and historical boundary limits.
+    /// </summary>
     public class InflationRate {
         public int Id { get; private set; }
         public DateOnly Date { get; private set; }
@@ -11,8 +15,14 @@ namespace InflationMonitor.Domain.Entities {
         //   without invoking domain validation
         private InflationRate() { }
 
-        // Used for explicitly creating valid domain instances and for JSON deserialization 
-        //   during data seeding
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InflationRate"/> class, validating business rules, 
+        /// normalizing the date to the 1st day of the month, and enforcing historical lower bounds.
+        /// </summary>
+        /// <param name="date">The inflation rate record date (will be normalized to the first day of the month).</param>
+        /// <param name="rate">The inflation multiplier rate (cannot be negative).</param>
+        /// <exception cref="DomainArgumentOutOfRangeException">Thrown when rate is less than zero.</exception>
+        /// <exception cref="InvalidHistoricalPeriodException">Thrown when the date precedes the official Ukrainian inflation recording period (January 2000).</exception>
         [JsonConstructor]
         public InflationRate(DateOnly date, decimal rate) {
             // Normalize the date to the 1st day of the month to enforce monthly domain invariant 

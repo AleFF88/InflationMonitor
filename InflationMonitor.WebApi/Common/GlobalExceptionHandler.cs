@@ -4,13 +4,22 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InflationMonitor.WebApi.Common {
+    /// <summary>
+    /// Represents a global exception handler that intercepts unhandled exceptions, 
+    /// logs them, and formats them into standard RFC 7807 ProblemDetails responses.
+    /// </summary>
     public class GlobalExceptionHandler : IExceptionHandler {
         private readonly ILogger<GlobalExceptionHandler> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlobalExceptionHandler"/> class.
+        /// </summary>
+        /// <param name="logger">The logger instance used to log unhandled exceptions.</param>
         public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) {
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,

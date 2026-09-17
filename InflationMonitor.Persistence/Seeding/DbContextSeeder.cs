@@ -5,11 +5,20 @@ using System.Linq.Expressions;
 using System.Text.Json;
 
 namespace InflationMonitor.Persistence.Seeding {
+    /// <summary>
+    /// Provides functionality for seeding initial historical inflation and exchange rate data 
+    /// from JSON files into the database during application startup.
+    /// </summary>
     public static class DbContextSeeder {
         private static readonly JsonSerializerOptions JsonOptions = new() {
             PropertyNameCaseInsensitive = true
         };
 
+        /// <summary>
+        /// Asynchronously seeds the database with initial dataset records if the corresponding tables are empty.
+        /// </summary>
+        /// <param name="context">The application database context instance.</param>
+        /// <returns>A task representing the asynchronous seeding operation.</returns>
         public static async Task SeedAsync(ApplicationDbContext context) {
             // Seeding the inflation rates.
             await SeedDataAsync<InflationRate>(context.InflationRates, "inflation.json");

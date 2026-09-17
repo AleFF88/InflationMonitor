@@ -4,6 +4,10 @@ using InflationMonitor.Application.Dtos;
 using MediatR;
 
 namespace InflationMonitor.Application.Queries.CalculateComparison {
+    /// <summary>
+    /// Handles the processing of <see cref="CalculateComparisonQuery"/> by orchestrating financial 
+    /// instrument strategies and compiling the final comparison summary response.
+    /// </summary>
     public class CalculateComparisonQueryHandler : IRequestHandler<CalculateComparisonQuery, CalculateComparisonResponseDto> {
 
         private readonly IFinancialInstrumentFactory _instrumentFactory;
@@ -12,6 +16,7 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
             _instrumentFactory = instrumentFactory;
         }
 
+        /// <inheritdoc />
         public async Task<CalculateComparisonResponseDto> Handle(CalculateComparisonQuery request, CancellationToken cancellationToken) {
 
             var inflationStrategy = _instrumentFactory.GetStrategy(FinancialInstrumentCategories.Inflation);

@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace InflationMonitor.Application.Strategies {
+    /// <summary>
+    /// Implements a batch processing strategy for calculating currency exchange rate equivalents
+    /// over a specified period.
+    /// </summary>
     public class BatchCurrencyStrategy : IBatchFinancialInstrumentStrategy {
         private readonly IApplicationDbContext _context;
         private readonly IMemoryCache _cache;
@@ -16,6 +20,7 @@ namespace InflationMonitor.Application.Strategies {
             _cache = cache;
         }
 
+        /// <inheritdoc />
         public async Task<CalculationResult> CalculateEquivalentsAsync(
             IEnumerable<string> instrumentCodes,
             DateOnly startDate,
@@ -81,8 +86,10 @@ namespace InflationMonitor.Application.Strategies {
         }
 
         /// <summary>
-        /// Caches fetched exchange rates in memory and updates the local rates collection.
+        /// Caches fetched exchange rates in memory and updates the local rates collection dictionary.
         /// </summary>
+        /// <param name="rates">Collection of exchange rate entities retrieved from the database.</param>
+        /// <param name="fetchedRates">Dictionary of fetched rates to be updated.</param>
         private void CacheAndStoreRates(IEnumerable<ExchangeRate> rates, Dictionary<string, ExchangeRate> fetchedRates) { 
             var cacheEntryOptions = new MemoryCacheEntryOptions() 
                 .SetSize(1) 
@@ -94,18 +101,25 @@ namespace InflationMonitor.Application.Strategies {
                 _cache.Set(cacheKey, rate, cacheEntryOptions); 
                 fetchedRates[periodKey] = rate; 
             } 
-        } 
+        }
 
         /// <summary>
-        /// Generates a standardized composite period key for a currency and date.
+        /// Generates a standardized composite period key for a given currency code and date.
         /// </summary>
+        /// <param name="currencyCode">The currency code.</param>
+        /// <param name="date">The date instance.</param>
+        /// <returns>A composite string key in format {CurrencyCode}_{yyyy-MM-01}.</returns>
         private static string BuildPeriodKey(string currencyCode, DateOnly date) => 
             $"{currencyCode}_{date:yyyy-MM-01}";
 
         /// <summary> 
-        /// Evaluates date boundaries for missing rates and constructs a user-friendly warning message.
-        /// Queries and caches the maximum available currency date if the end boundary fails validation.  
+        /// Evaluates date boundaries for missing rates and constructs a user-friendly warning message, querying the maximum available currency date if necessary.  
         /// </summary> 
+        /// <param name="currencyCode">The currency code being evaluated.</param>
+        /// <param name="startDate">The requested start date.</param>
+        /// <param name="endDate">The requested end date.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task containing the generated warning message string.</returns>
         private async Task<string> BuildWarningForMissingRateAsync(
             string currencyCode,
             DateOnly startDate,
@@ -124,11 +138,12 @@ namespace InflationMonitor.Application.Strategies {
             return $"Historical exchange rate data for '{currencyCode}' is missing or incomplete for the requested period.";
         }
 
-
         /// <summary> 
-        /// Retrieves the latest available rate date for a given currency from the database, 
-        /// caching the result in memory to prevent repeated query executions. 
+        /// Retrieves the latest available rate date for a given currency from the database, caching the result in memory. 
         /// </summary> 
+        /// <param name="currencyCode">The currency code to check.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A task containing the maximum available DateOnly if present, otherwise null.</returns>
         private async Task<DateOnly?> GetMaxAvailableCurrencyDateAsync(string currencyCode, CancellationToken cancellationToken) {
             var cacheKey = $"currency_max_date_{currencyCode.ToLowerInvariant()}";
             return await _cache.GetOrCreateAsync(cacheKey, async entry => {

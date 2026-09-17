@@ -2,6 +2,10 @@
 using System.Text.Json.Serialization;
 
 namespace InflationMonitor.Domain.Entities {
+    /// <summary>
+    /// Represents a historical exchange rate domain entity for a specific currency and monthly period, 
+    /// enforcing core domain invariants and business rules.
+    /// </summary>
     public class ExchangeRate {
         public int Id { get; private set; }
         public string CurrencyCode { get; private set; } = string.Empty;
@@ -12,8 +16,15 @@ namespace InflationMonitor.Domain.Entities {
         //   without invoking domain validation
         private ExchangeRate() { }
 
-        // Used for explicitly creating valid domain instances and for JSON deserialization 
-        //   during data seeding
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExchangeRate"/> class, validating business rules, 
+        /// normalizing the date to the 1st day of the month, and enforcing historical lower bounds.
+        /// </summary>
+        /// <param name="currencyCode">The currency code (e.g., USD, EUR).</param>
+        /// <param name="date">The exchange rate record date (will be normalized to the first day of the month).</param>
+        /// <param name="rate">The exchange rate value (must be greater than zero).</param>
+        /// <exception cref="DomainArgumentOutOfRangeException">Thrown when currencyCode is null/empty or rate is less than or equal to zero.</exception>
+        /// <exception cref="InvalidHistoricalPeriodException">Thrown when the date precedes the introduction of the Ukrainian Hryvnia (September 1996).</exception>
         [JsonConstructor]
         public ExchangeRate(string currencyCode, DateOnly date, decimal rate) {
             if (string.IsNullOrWhiteSpace(currencyCode)) {

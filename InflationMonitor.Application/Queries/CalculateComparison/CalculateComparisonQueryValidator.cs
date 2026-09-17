@@ -2,6 +2,10 @@
 using InflationMonitor.Application.Common.Constants;
 
 namespace InflationMonitor.Application.Queries.CalculateComparison {
+    /// <summary>
+    /// Validates properties and business constraints for <see cref="CalculateComparisonQuery"/> 
+    /// inputs (including monetary amount, date boundaries, and historical Hryvnia limits).
+    /// </summary>
     public class CalculateComparisonQueryValidator : AbstractValidator<CalculateComparisonQuery> {
 
         // Historical fact: The Ukrainian hryvnia was officially introduced on September 2, 1996.
