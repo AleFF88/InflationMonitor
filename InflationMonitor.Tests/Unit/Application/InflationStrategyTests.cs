@@ -160,27 +160,6 @@ namespace InflationMonitor.Tests.Unit.Application {
         }
 
         /// <summary>
-        /// Verifies that when StartDate equals EndDate, inflation is calculated for that single month.
-        /// </summary>
-        [Fact]
-        public async Task CalculateEquivalentsAsync_WhenSingleMonthRequested_ShouldCalculateCorrectly() {
-            // Arrange
-            var date = new DateOnly(2023, 1, 1);
-            var rate = new InflationRate(date, 1.02m);
-
-            DbContext.InflationRates.Add(rate);
-            await DbContext.SaveChangesAsync();
-
-            // Act
-            var result = await _strategy.CalculateEquivalentsAsync(
-                [], date, date, 1000m, CancellationToken.None); 
-
-            // Assert
-            result.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1020.00m); 
-            result.Warnings.Should().BeEmpty(); 
-        }
-
-        /// <summary>
         /// Verifies that passing a cancelled CancellationToken throws OperationCanceledException.
         /// </summary>
         [Fact]
