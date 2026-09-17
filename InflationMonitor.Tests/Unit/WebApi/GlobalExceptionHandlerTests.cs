@@ -144,6 +144,65 @@ namespace InflationMonitor.Tests.Unit.WebApi {
             httpContext.Response.Body.Length.Should().BeGreaterThan(0); 
         }
 
+        /// <summary>
+        /// Verifies that throwing a DomainException returns HTTP 400 Bad Request 
+        /// with ProblemDetails title set to "Domain Error" and contains exact exception message.
+        /// </summary>
+        [Fact]
+        public async Task TryHandleAsync_WhenDomainExceptionIsThrown_ShouldReturn400BadRequestWithDomainErrorDetails() {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            const string errorMessage = "Historical financial data is unavailable for the requested period.";
+            var domainException = new InvalidHistoricalPeriodException(errorMessage);
+
+            // Act
+            var result = await _handler.TryHandleAsync(httpContext, domainException, CancellationToken.None); 
+            var problemDetails = await ReadProblemDetailsAsync(httpContext);
+
+            // Assert
+            result.Should().BeTrue(); 
+            httpContext.Response.StatusCode.Should().Be(StatusCodes.Status400BadRequest); 
+
+            problemDetails.Should().NotBeNull(); 
+            problemDetails!.Title.Should().Be("Domain Error"); 
+            problemDetails.Detail.Should().Be(errorMessage); 
+            problemDetails.Status.Should().Be(StatusCodes.Status400BadRequest); 
+        }
+
+        /// <summary>
+        /// Verifies that unhandled generic exceptions return HTTP 500 Internal Server Error,
+        /// log the exception at Error level, and mask internal details in the response payload.
+        /// </summary>
+        [Fact]
+        public async Task TryHandleAsync_WhenUnhandledExceptionIsThrown_ShouldReturn500InternalServerErrorAndMaskDetailsAndLog() {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            const string sensitiveMessage = "Database connection string string_val leaked!";
+            var unhandledException = new InvalidOperationException(sensitiveMessage);
+
+            // Act
+            var result = await _handler.TryHandleAsync(httpContext, unhandledException, CancellationToken.None); 
+            var problemDetails = await ReadProblemDetailsAsync(httpContext);
+
+            // Assert
+            result.Should().BeTrue(); 
+            httpContext.Response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError); 
+
+            problemDetails.Should().NotBeNull(); 
+            problemDetails!.Title.Should().Be("Server Error"); 
+            problemDetails.Detail.Should().Be("An unexpected error occurred on the server."); 
+            problemDetails.Detail.Should().NotContain(sensitiveMessage); 
+
+            _loggerMock.Verify( 
+                x => x.Log( 
+                    LogLevel.Error, 
+                    It.IsAny<EventId>(), 
+                    It.Is<It.IsAnyType>((v, t) => true), 
+                    unhandledException, 
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()), 
+                Times.Once); 
+        }
+
         private static DefaultHttpContext CreateHttpContext() {
             var context = new DefaultHttpContext();
             context.Response.Body = new MemoryStream();

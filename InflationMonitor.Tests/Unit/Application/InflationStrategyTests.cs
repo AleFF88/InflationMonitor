@@ -173,11 +173,11 @@ namespace InflationMonitor.Tests.Unit.Application {
 
             // Act
             var result = await _strategy.CalculateEquivalentsAsync(
-                [], date, date, 1000m, CancellationToken.None); // new code
+                [], date, date, 1000m, CancellationToken.None); 
 
             // Assert
-            result.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1020.00m); // new code
-            result.Warnings.Should().BeEmpty(); // new code
+            result.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1020.00m); 
+            result.Warnings.Should().BeEmpty(); 
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace InflationMonitor.Tests.Unit.Application {
         public async Task CalculateEquivalentsAsync_WhenCancelled_ShouldThrowOperationCanceledException() {
             // Arrange
             using var cts = new CancellationTokenSource();
-            cts.Cancel(); // new code
+            cts.Cancel(); 
 
             // Act
             Func<Task> act = async () => await _strategy.CalculateEquivalentsAsync(
@@ -195,10 +195,10 @@ namespace InflationMonitor.Tests.Unit.Application {
                 new DateOnly(2023, 1, 1),
                 new DateOnly(2023, 3, 1),
                 1000m,
-                cts.Token); // new code
+                cts.Token); 
 
             // Assert
-            await act.Should().ThrowAsync<OperationCanceledException>(); // new code
+            await act.Should().ThrowAsync<OperationCanceledException>(); 
         }
     }
 }
