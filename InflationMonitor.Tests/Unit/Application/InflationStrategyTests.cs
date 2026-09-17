@@ -123,7 +123,7 @@ namespace InflationMonitor.Tests.Unit.Application {
             // Assert
             result.Equivalents[InflationConstants.Codes.Cpi].Should().BeNull();
             result.Warnings.Should().HaveCount(1);
-            result.Warnings[0].Should().Contain("2023-03"); 
+            result.Warnings[0].Should().Contain("2023-03");
         }
 
         /// <summary>
@@ -157,6 +157,48 @@ namespace InflationMonitor.Tests.Unit.Application {
             firstResult.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1030.00m);
             secondResult.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1030.00m);
             secondResult.Warnings.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// Verifies that when StartDate equals EndDate, inflation is calculated for that single month.
+        /// </summary>
+        [Fact]
+        public async Task CalculateEquivalentsAsync_WhenSingleMonthRequested_ShouldCalculateCorrectly() {
+            // Arrange
+            var date = new DateOnly(2023, 1, 1);
+            var rate = new InflationRate(date, 1.02m);
+
+            DbContext.InflationRates.Add(rate);
+            await DbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _strategy.CalculateEquivalentsAsync(
+                [], date, date, 1000m, CancellationToken.None); // new code
+
+            // Assert
+            result.Equivalents[InflationConstants.Codes.Cpi].Should().Be(1020.00m); // new code
+            result.Warnings.Should().BeEmpty(); // new code
+        }
+
+        /// <summary>
+        /// Verifies that passing a cancelled CancellationToken throws OperationCanceledException.
+        /// </summary>
+        [Fact]
+        public async Task CalculateEquivalentsAsync_WhenCancelled_ShouldThrowOperationCanceledException() {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            cts.Cancel(); // new code
+
+            // Act
+            Func<Task> act = async () => await _strategy.CalculateEquivalentsAsync(
+                [],
+                new DateOnly(2023, 1, 1),
+                new DateOnly(2023, 3, 1),
+                1000m,
+                cts.Token); // new code
+
+            // Assert
+            await act.Should().ThrowAsync<OperationCanceledException>(); // new code
         }
     }
 }

@@ -170,5 +170,70 @@ namespace InflationMonitor.Tests.Unit.Application {
             secondResult.Equivalents[CurrencyConstants.Codes.Usd].Should().Be(1095.89m);
             secondResult.Warnings.Should().BeEmpty();
         }
+
+        /// <summary>
+        /// Verifies that passing an empty list of requested currencies returns an empty
+        /// equivalents dictionary without throwing.
+        /// </summary>
+        [Fact]
+        public async Task CalculateEquivalentsAsync_WhenRequestedCurrenciesIsEmpty_ShouldReturnEmptyEquivalents() {
+            // Arrange
+            var startDate = new DateOnly(2023, 1, 1);
+            var endDate = new DateOnly(2023, 3, 1);
+
+            // Act
+            var result = await _strategy.CalculateEquivalentsAsync(
+                Array.Empty<string>(), startDate, endDate, 1000m, CancellationToken.None);
+
+            // Assert
+            result.Equivalents.Should().BeEmpty(); 
+            result.Warnings.Should().BeEmpty(); 
+        }
+
+        /// <summary>
+        /// Verifies that currency codes provided in lowercase are handled case-insensitively.
+        /// </summary>
+        [Fact]
+        public async Task CalculateEquivalentsAsync_WhenCurrencyCodesAreLowercase_ShouldCalculateCorrectly() {
+            // Arrange
+            var startDate = new DateOnly(2023, 1, 1);
+            var endDate = new DateOnly(2023, 3, 1);
+            var exchangeRates = new List<ExchangeRate> {
+                new(CurrencyConstants.Codes.Usd, startDate, 36.5m),
+                new(CurrencyConstants.Codes.Usd, endDate, 40.0m)
+            };
+
+            DbContext.ExchangeRates.AddRange(exchangeRates);
+            await DbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _strategy.CalculateEquivalentsAsync(
+                new[] { "usd" }, startDate, endDate, 1000m, CancellationToken.None); 
+
+            // Assert
+            result.Equivalents.Should().ContainKey(CurrencyConstants.Codes.Usd); 
+            result.Equivalents[CurrencyConstants.Codes.Usd].Should().Be(1095.89m); 
+        }
+
+        /// <summary>
+        /// Verifies that passing a cancelled CancellationToken throws OperationCanceledException.
+        /// </summary>
+        [Fact]
+        public async Task CalculateEquivalentsAsync_WhenCancelled_ShouldThrowOperationCanceledException() {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            cts.Cancel(); 
+
+            // Act
+            Func<Task> act = async () => await _strategy.CalculateEquivalentsAsync(
+                new[] { CurrencyConstants.Codes.Usd },
+                new DateOnly(2023, 1, 1),
+                new DateOnly(2023, 3, 1),
+                1000m,
+                cts.Token); 
+
+            // Assert
+            await act.Should().ThrowAsync<OperationCanceledException>(); 
+        }
     }
 }
