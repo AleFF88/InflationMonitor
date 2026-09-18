@@ -3,9 +3,22 @@ name: InflationMonitor tests
 on:
   push:
     branches: [ "main", "master" ]
+    paths:
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.sln'
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'README.md'
   pull_request:
     branches: [ "main", "master" ]
-
+    paths:
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.sln'
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'README.md'
 jobs:
   test:
     runs-on: ubuntu-latest
