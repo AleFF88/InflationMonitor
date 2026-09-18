@@ -2,8 +2,6 @@
 using InflationMonitor.Application.Common.Constants;
 using InflationMonitor.Application.Strategies;
 using InflationMonitor.Domain.Entities;
-using Microsoft.Extensions.Caching.Memory;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace InflationMonitor.Tests.Unit.Application.Strategies {
     /// <summary>

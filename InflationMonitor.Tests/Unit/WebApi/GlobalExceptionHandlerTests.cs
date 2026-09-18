@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using InflationMonitor.Domain.Exceptions;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Text.Json;
 
 namespace InflationMonitor.Tests.Unit.WebApi {
     /// <summary>
