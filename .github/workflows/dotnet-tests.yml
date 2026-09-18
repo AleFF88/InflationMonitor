@@ -1,4 +1,4 @@
-name: .NET Tests
+name: InflationMonitor tests
 
 on:
   push:
