@@ -8,9 +8,10 @@
 [![OpenAPI](https://img.shields.io/badge/API%20Docs-Swagger%2FOpenAPI-85EA2D?logo=swagger)](https://swagger.io/)
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.uk)
 
+
 REST API, який показує, як за обраний період змінилася купівельна спроможність фіксованої суми в українських гривнях (UAH) порівняно з інфляцією та різними фінансовими інструментами для пасивного збереження заощаджень (див. розділ 1, «Підтримувані інструменти»).  
 
-**Статус:** рання робоча версія (MVP).
+**Статус:** рання робоча версія (Minimum Viable Product).
 
 ---
 

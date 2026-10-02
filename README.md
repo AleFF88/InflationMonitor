@@ -8,9 +8,10 @@
 [![OpenAPI](https://img.shields.io/badge/API%20Docs-Swagger%2FOpenAPI-85EA2D?logo=swagger)](https://swagger.io/)
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.uk)
 
+
 A REST API that shows how the purchasing power of a fixed amount in Ukrainian hryvnias (UAH) changed over a chosen period compared with inflation and various financial instruments for passive savings (see section 1, "Supported instruments").  
 
-**Status:** early working version (MVP).
+**Status:** early working version (Minimum Viable Product).
 
 ---
 
