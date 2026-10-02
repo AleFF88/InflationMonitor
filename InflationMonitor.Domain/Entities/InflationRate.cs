@@ -35,8 +35,8 @@ namespace InflationMonitor.Domain.Entities {
                 throw new InvalidHistoricalPeriodException("Inflation rate data is available only starting from January 2000.");
             }
 
-            if (rate < 0) {
-                throw new DomainArgumentOutOfRangeException(nameof(rate), "Inflation rate cannot be negative.");
+            if (rate <= 0) {
+                throw new DomainArgumentOutOfRangeException(nameof(rate), "Inflation rate must be greater than zero.");
             }
 
             Date = normalizedDate;
