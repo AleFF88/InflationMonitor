@@ -78,8 +78,7 @@ namespace InflationMonitor.Application.Strategies {
                     continue;
                 }
 
-                decimal currencyBought = amount / startRate.Rate;
-                result[currencyCode] = Math.Round(currencyBought * endRate.Rate, 2);
+                result[currencyCode] = Math.Round(amount * endRate.Rate / startRate.Rate, 2, MidpointRounding.AwayFromZero); 
             }
 
             return new CalculationResult(result, warnings);

@@ -77,7 +77,7 @@ namespace InflationMonitor.Application.Strategies {
                 inflationMultiplier *= index.Rate;
             }
 
-            result[InflationConstants.Codes.Cpi] = Math.Round(amount * inflationMultiplier, 2);
+            result[InflationConstants.Codes.Cpi] = Math.Round(amount * inflationMultiplier, 2, MidpointRounding.AwayFromZero);
             return new CalculationResult(result, warnings);
         }
 
