@@ -14,7 +14,9 @@ namespace InflationMonitor.Application.Queries.CalculateComparison {
         public CalculateComparisonQueryValidator() {
             RuleFor(x => x.Amount)
                 .GreaterThan(0)
-                .WithMessage("Amount must be greater than zero.");
+                .WithMessage("Amount must be greater than zero.")
+                .LessThanOrEqualTo(1_000_000_000m)
+                .WithMessage("Amount must not exceed 1,000,000,000.");
 
             RuleFor(x => x.StartDate)
                 .LessThanOrEqualTo(x => x.EndDate)
