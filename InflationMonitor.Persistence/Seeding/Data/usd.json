@@ -355,7 +355,9 @@
 	{ "currencyCode" : "USD", "date" : "2026-02-01", "rate" : 44.30},
 	{ "currencyCode" : "USD", "date" : "2026-03-01", "rate" : 44.45},
 	{ "currencyCode" : "USD", "date" : "2026-04-01", "rate" : 44.20},
-	{ "currencyCode" : "USD", "date" : "2026-05-01", "rate" : 44.40},
-	{ "currencyCode" : "USD", "date" : "2026-06-01", "rate" : 45.10},
-	{ "currencyCode" : "USD", "date" : "2026-07-01", "rate" : 44.95}
+	{ "currencyCode" : "USD", "date" : "2026-05-01", "rate" : 44.10},
+	{ "currencyCode" : "USD", "date" : "2026-06-01", "rate" : 44.30},
+	{ "currencyCode" : "USD", "date" : "2026-07-01", "rate" : 44.35},
+	{ "currencyCode" : "USD", "date" : "2026-08-01", "rate" : 44.50},
+	{ "currencyCode" : "USD", "date" : "2026-09-01", "rate" : 44.15}
 ]

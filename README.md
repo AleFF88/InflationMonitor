@@ -36,7 +36,7 @@ The service answers the question: "What happened to my money if I just kept it i
 | `Currencies` | `USD` | US dollar, commercial UAH/USD exchange rate | September 1996 |
 | `Currencies` | `EUR` | Euro, commercial UAH/EUR exchange rate | January 1999 |
 
-**Data currency by instrument:** up to and including 2026-06. 
+**Data currency by instrument:** up to and including 2026-09. 
 
 ---
 

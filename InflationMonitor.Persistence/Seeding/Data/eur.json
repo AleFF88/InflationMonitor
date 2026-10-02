@@ -329,5 +329,7 @@
 	{ "currencyCode" : "EUR", "date" : "2026-04-01", "rate" : 51.45},
 	{ "currencyCode" : "EUR", "date" : "2026-05-01", "rate" : 51.46},
 	{ "currencyCode" : "EUR", "date" : "2026-06-01", "rate" : 51.55},
-	{ "currencyCode" : "EUR", "date" : "2026-07-01", "rate" : 51.95}
+	{ "currencyCode" : "EUR", "date" : "2026-07-01", "rate" : 51.85},
+	{ "currencyCode" : "EUR", "date" : "2026-08-01", "rate" : 52.00},
+	{ "currencyCode" : "EUR", "date" : "2026-09-01", "rate" : 51.55}
 ]
