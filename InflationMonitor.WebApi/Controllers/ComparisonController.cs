@@ -2,6 +2,7 @@
 using InflationMonitor.Application.Queries.CalculateComparison;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace InflationMonitor.WebApi.Controllers {
     [ApiController]
@@ -30,13 +31,13 @@ namespace InflationMonitor.WebApi.Controllers {
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Compare(
-            [FromQuery] DateOnly startDate,
-            [FromQuery] DateOnly endDate,
-            [FromQuery] decimal amount,
+            [FromQuery, Required] DateOnly? startDate,
+            [FromQuery, Required] DateOnly? endDate,
+            [FromQuery, Required] decimal? amount,
             CancellationToken cancellationToken) {
 
             // Encapsulates incoming query string parameters into a MediatR query object
-            var query = new CalculateComparisonQuery(startDate, endDate, amount);
+            var query = new CalculateComparisonQuery(startDate!.Value, endDate!.Value, amount!.Value);
             // Sends the query through the MediatR pipeline to be processed by CalculateComparisonQueryHandler
             var result = await _mediator.Send(query, cancellationToken);
 

@@ -207,5 +207,21 @@ namespace InflationMonitor.Tests.Integration.Controllers {
             errors!.Should().ContainKey("Amount");
             errors["Amount"].Should().Contain("Amount must be greater than zero.");
         }
+
+        /// <summary>
+        /// Verifies that the compare endpoint returns a 400 Bad Request status code 
+        /// when required query parameters are missing.
+        /// </summary>
+        [Fact]
+        public async Task Compare_ReturnsBadRequest_WhenRequiredQueryParametersAreMissing() {
+            // Arrange
+            var client = _factory.CreateClient();
+
+            // Act - send a request without the required `amount` parameter
+            var response = await client.GetAsync("/api/calculator/compare?startDate=2026-01-01&endDate=2026-01-31"); // new code
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
     }
 }
