@@ -58,7 +58,7 @@ namespace InflationMonitor.Tests.Unit.Domain {
             // Assert
             act.Should().Throw<DomainArgumentOutOfRangeException>()
                .Where(ex => ex.ParamName == "rate")
-               .WithMessage("*cannot be negative*");
+               .WithMessage("*greater than zero*");
         }
     }
 }
