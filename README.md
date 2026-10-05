@@ -155,7 +155,7 @@ Errors are returned in the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7
 | :--- | :--- | :--- |
 | `400` | `Validation Error` | Validation rules were violated. Details are in the `errors` field. |
 | `400` | `Domain Error` | A domain rule was violated (the text is in `detail`). |
-| `400` | (standard ASP.NET Core) | A parameter could not be parsed, for example, an incorrect date format. The body format is standard for ASP.NET Core (`ValidationProblemDetails`). |
+| `400` | (standard ASP.NET Core) | A required parameter is missing or failed to parse—for example, an invalid date format. Validation occurs at the controller boundary, before reaching MediatR. The response body format is the standard ASP.NET Core format (`ValidationProblemDetails`). |
 | `500` | `Server Error` | An unexpected error. Internal details are not passed to the client. |
 
 Example of a `400 Validation Error` for `amount=0`:
@@ -169,6 +169,21 @@ Example of a `400 Validation Error` for `amount=0`:
   "errors": {
     "Amount": ["Amount must be greater than zero."]
   }
+}
+```
+
+
+Example of a `400` response for a missing parameter (`amount` not passed):
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "amount": ["The amount field is required."]
+  },
+  "traceId": "XXX"
 }
 ```
 
@@ -290,7 +305,7 @@ Historical values for past months by design do not change: data is only accumula
 
 #### Error handling
 
-`GlobalExceptionHandler` logs exceptions and converts them into `ProblemDetails`: validation errors and domain errors become a `400` response, everything else a `500` response with a generic message so as not to expose internal details. Parameter binding errors (for example, an incorrect date format) are handled by ASP.NET Core itself.
+`GlobalExceptionHandler` logs exceptions and converts them into `ProblemDetails`: validation errors and domain errors become a `400` response, everything else a `500` response with a generic message so as not to expose internal details. Missing required parameters and binding errors (e.g. an invalid date format) are rejected at the controller boundary, before MediatR is invoked, thanks to `[ApiController]` and nullable `[Required]` parameters. They therefore return the standard `ValidationProblemDetails` rather than the `Validation Error` produced by `GlobalExceptionHandler`.
 
 ---
 
@@ -312,7 +327,6 @@ Run: `dotnet test`.
 * **Migrations and seeding only in Development.** For other environments, the database deployment procedure has to be organized separately.
 * **The cache is not shared between instances.** It is local to the process. After data in the DB is updated, values in the cache may be stale for up to 10 days.
 * **Extending instruments requires contract changes.** A new instrument means a new strategy, as well as a change to the response DTO and the query handler.
-* **Missing parameters.** A missing parameter is not rejected at the binding stage; a default value is substituted, and the regular validation kicks in. The error text in that case may be non-obvious.
 
 ### Ideas for the future
 
