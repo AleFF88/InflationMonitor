@@ -18,8 +18,14 @@ namespace InflationMonitor.WebApi.Controllers {
         /// <summary>
         /// Calculates changes in the purchasing power of the Ukrainian Hryvnia relative to various financial equivalents based on historical data.
         /// </summary>
-        /// <param name="startDate">Start period of the calculation in YYYY-MM-DD format.</param>
-        /// <param name="endDate">End period of the calculation in YYYY-MM-DD format.</param>
+        /// <remarks>
+        /// Calculations have monthly granularity: only the year and month of <c>startDate</c> and 
+        /// <c>endDate</c> are used, the day is ignored. Dates are normalized to the 1st day of the 
+        /// month, and the response returns the normalized dates (e.g. a request with <c>2023-01-15</c> 
+        /// returns <c>2023-01-01</c>).
+        /// </remarks>
+        /// <param name="startDate">Start of the period in YYYY-MM-DD format. Only year and month are used; the day is ignored.</param>
+        /// <param name="endDate">End of the period in YYYY-MM-DD format. Only year and month are used; the day is ignored.</param>
         /// <param name="amount">Initial monetary amount in UAH. Must be greater than 0.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Calculated financial comparison summary containing equivalents for requested instruments.</returns>

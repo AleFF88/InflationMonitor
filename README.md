@@ -80,9 +80,11 @@ dotnet test
 | endDate | string (yyyy&#8209;MM&#8209;dd) | yes | End of the period (also only the year and month). | 2023&#8209;02&#8209;01 |
 | amount | decimal | yes | Initial amount in UAH, strictly greater than 0. | 1000 |
 
+> **Date format and normalization.** Parameters are accepted in `yyyy-MM-dd` format, but calculations are performed with monthly precision: the day is ignored. In the response, `startDate` and `endDate` are returned normalized to the 1st of the month (`yyyy-MM-01`). For example, a request with `startDate=2023-01-15` will return `"startDate": "2023-01-01"`.
+
 #### Validation rules (`400` error)
 
-* `amount` > 0;
+* `amount` > 0 and not more than 1,000,000,000;
 * `startDate` ≤ `endDate`;
 * `startDate` not earlier than September 1996 (a common boundary for all instruments, the introduction of the hryvnia);
 * `endDate` not later than the current month (UTC).
