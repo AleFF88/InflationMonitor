@@ -214,14 +214,19 @@ namespace InflationMonitor.Tests.Integration.Controllers {
         /// </summary>
         [Fact]
         public async Task Compare_ReturnsBadRequest_WhenRequiredQueryParametersAreMissing() {
-            // Arrange
-            var client = _factory.CreateClient();
-
-            // Act - send a request without the required `amount` parameter
-            var response = await client.GetAsync("/api/calculator/compare?startDate=2026-01-01&endDate=2026-01-31"); // new code
+            // Act - send a request without the required 'amount' parameter
+            var response = await _client.GetAsync("/api/calculator/compare?startDate=2026-01-01&endDate=2026-01-31");
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            // The error must point at the missing parameter (rejected at model binding, before MediatR)
+            var json = await response.Content.ReadAsStringAsync();
+            using var document = JsonDocument.Parse(json);
+
+            document.RootElement.GetProperty("errors")
+                .TryGetProperty("amount", out _)
+                .Should().BeTrue();
         }
     }
 }
